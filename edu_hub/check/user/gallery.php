@@ -1,32 +1,10 @@
-<?php
-require_once '../admin/includes/db.php';
-
-// Get all gallery images
-$images = [];
-try {
-    $stmt = $pdo->query("SELECT * FROM gallery_images WHERE is_active = 1 ORDER BY created_at DESC");
-    $images = $stmt->fetchAll();
-} catch (Exception $e) {
-    $images = [];
-}
-
-// Get categories
-$categories = [];
-try {
-    $stmt = $pdo->query("SELECT DISTINCT category FROM gallery_images WHERE is_active = 1");
-    $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
-} catch (Exception $e) {
-    $categories = ['photography', 'travel', 'nature', 'fashion', 'lifestyle'];
-}
-
-include 'navbar.php';
-?>
+<?php include 'navbar.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Gallery - <?= getSchoolConfig('school_name', 'School') ?></title>
+    <title>Photo Gallery</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #fff; }
@@ -101,71 +79,68 @@ include 'navbar.php';
         @media (max-width: 600px) {
             .gallery-item img { height: 120px; }
         }
-        .no-images {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
     </style>
 </head>
 <body>
     <div class="gallery-header">
-        <h1>WELCOME TO <?= strtoupper(getSchoolConfig('school_name', 'SCHOOL')) ?> PHOTO GALLERY</h1>
-        <p>CAPTURING MOMENTS & MEMORIES</p>
+        <h1>HELLO! WELCOME TO SUNZINE PHOTO GALLERY</h1>
+        <p>WITH CREATIVE &amp; UNIQUE STYLE</p>
     </div>
-    
     <div class="gallery-filters">
         <button class="btn btn-dark filter-btn" data-filter="all">All</button>
-        <?php foreach ($categories as $category): ?>
-            <button class="btn btn-outline-dark filter-btn" data-filter="<?= htmlspecialchars($category) ?>">
-                <?= ucfirst(htmlspecialchars($category)) ?>
-            </button>
-        <?php endforeach; ?>
+        <button class="btn btn-outline-dark filter-btn" data-filter="photography">Photography</button>
+        <button class="btn btn-outline-dark filter-btn" data-filter="travel">Travel</button>
+        <button class="btn btn-outline-dark filter-btn" data-filter="nature">Nature</button>
+        <button class="btn btn-outline-dark filter-btn" data-filter="fashion">Fashion</button>
+        <button class="btn btn-outline-dark filter-btn" data-filter="lifestyle">Life Style</button>
     </div>
-    
     <div class="gallery-grid">
-        <?php if (empty($images)): ?>
-            <div class="no-images col-12">
-                <i class="fas fa-images fa-3x mb-3"></i>
-                <h4>No Images Available</h4>
-                <p>Gallery images will appear here once they are uploaded by the administrator.</p>
-            </div>
-        <?php else: ?>
-            <?php foreach ($images as $image): ?>
-                <div class="gallery-item" data-category="<?= htmlspecialchars($image['category']) ?>">
-                    <img src="<?= htmlspecialchars($image['image_path']) ?>" alt="<?= htmlspecialchars($image['title']) ?>">
-                    <div class="overlay">
-                        <strong><?= htmlspecialchars($image['title']) ?></strong>
-                        <?php if ($image['description']): ?>
-                            <br><small><?= htmlspecialchars($image['description']) ?></small>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+        <div class="gallery-item" data-category="photography travel">
+            <img src="../images/bitcblog1.jpg" alt="Travel 1">
+            <div class="overlay">Travel &amp; Photography</div>
+        </div>
+        <div class="gallery-item" data-category="photography nature">
+            <img src="../images/161024-duke-university-submitted.jpg" alt="Nature 1">
+            <div class="overlay">Nature &amp; Photography</div>
+        </div>
+        <div class="gallery-item" data-category="fashion lifestyle">
+            <img src="../images/berry-college-historic-campus-at-twilight-royalty-free-image-1652127954.avif" alt="Fashion 1">
+            <div class="overlay">Fashion &amp; Life Style</div>
+        </div>
+        <div class="gallery-item" data-category="fashion">
+            <img src="../images/edu.jpeg" alt="Fashion 2">
+            <div class="overlay">Fashion</div>
+        </div>
+        <div class="gallery-item" data-category="lifestyle">
+            <img src="../images/cm.jpeg" alt="Life Style 1">
+            <div class="overlay">Life Style</div>
+        </div>
+        <div class="gallery-item" data-category="travel">
+            <img src="../images/flag.jpeg" alt="Travel 2">
+            <div class="overlay">Travel</div>
+        </div>
+        <div class="gallery-item" data-category="nature">
+            <img src="../images/school.png" alt="Nature 2">
+            <div class="overlay">Nature</div>
+        </div>
     </div>
-    
     <!-- Lightbox Modal -->
     <div id="lightboxModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(30,42,68,0.85); align-items:center; justify-content:center;">
         <span id="lightboxClose" style="position:absolute; top:30px; right:40px; font-size:2.5rem; color:#fff; cursor:pointer; z-index:10001;">&times;</span>
         <img id="lightboxImg" src="" alt="Large Preview" style="max-width:90vw; max-height:80vh; border-radius:32px; box-shadow:0 4px 32px #000a; display:block; margin:auto; transform: scale(0.85) rotate(-3deg); opacity:0; transition: all 0.35s cubic-bezier(.4,2,.6,1);">
-        <div id="lightboxInfo" style="position:absolute; bottom:50px; left:50%; transform:translateX(-50%); color:#fff; text-align:center; max-width:80%;"></div>
     </div>
-    
     <script>
         const filterBtns = document.querySelectorAll('.filter-btn');
         const galleryItems = document.querySelectorAll('.gallery-item');
-        
         filterBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 filterBtns.forEach(b => b.classList.remove('btn-dark'));
                 filterBtns.forEach(b => b.classList.add('btn-outline-dark'));
                 this.classList.remove('btn-outline-dark');
                 this.classList.add('btn-dark');
-                
                 const filter = this.getAttribute('data-filter');
                 galleryItems.forEach(item => {
-                    if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                    if (filter === 'all' || item.getAttribute('data-category').includes(filter)) {
                         item.style.display = '';
                     } else {
                         item.style.display = 'none';
@@ -173,39 +148,29 @@ include 'navbar.php';
                 });
             });
         });
-        
         // Lightbox functionality
         const lightboxModal = document.getElementById('lightboxModal');
         const lightboxImg = document.getElementById('lightboxImg');
-        const lightboxInfo = document.getElementById('lightboxInfo');
         const lightboxClose = document.getElementById('lightboxClose');
-        
         galleryItems.forEach(item => {
             item.addEventListener('click', function(e) {
                 const img = item.querySelector('img');
-                const overlay = item.querySelector('.overlay');
-                
                 lightboxImg.src = img.src;
-                lightboxInfo.innerHTML = overlay.innerHTML;
                 lightboxModal.style.display = 'flex';
-                
                 setTimeout(() => {
                     lightboxImg.style.transform = 'scale(1) rotate(0deg)';
                     lightboxImg.style.opacity = '1';
                 }, 10);
             });
         });
-        
         function closeLightbox() {
             lightboxImg.style.transform = 'scale(0.85) rotate(-3deg)';
             lightboxImg.style.opacity = '0';
             setTimeout(() => {
                 lightboxModal.style.display = 'none';
                 lightboxImg.src = '';
-                lightboxInfo.innerHTML = '';
             }, 300);
         }
-        
         lightboxClose.addEventListener('click', closeLightbox);
         lightboxModal.addEventListener('click', function(e) {
             if (e.target === lightboxModal) {
@@ -213,7 +178,29 @@ include 'navbar.php';
             }
         });
     </script>
-    
-    <?php include 'footer.php'; ?>
+<?php include 'footer.php'; ?>
 </body>
 </html>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // JavaScript for filtering functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.nav-link');
+        const grids = document.querySelectorAll('.tab-pane');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const category = this.getAttribute('data-bs-target');
+                grids.forEach(grid => {
+                    if (grid.id === category.substring(1)) {
+                        grid.classList.add('show', 'active');
+                    } else {
+                        grid.classList.remove('show', 'active');
+                    }
+                });
+            });
+        });
+    });
+</script>

@@ -1,10 +1,23 @@
 <?php
-// Include database connection
-require_once '../admin/includes/db.php';
-
-// Get school configuration
-$school_name = getSchoolConfig('school_name', 'School Name');
-$school_logo = getSchoolConfig('school_logo', '');
+// Navbar for inclusion in all pages
+// Use the same DB connection as admin/includes/db.php
+$host = 'localhost';
+$db   = 'edu_hub';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    $pdo = null;
+}
+$logo = $pdo ? $pdo->query("SELECT image_path FROM navbar_logo ORDER BY id DESC LIMIT 1")->fetchColumn() : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,6 +25,7 @@ $school_logo = getSchoolConfig('school_logo', '');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -22,16 +36,9 @@ $school_logo = getSchoolConfig('school_logo', '');
             height: 44px;
             width: auto;
             border-radius: 6px;
-            object-fit: contain;
+            object-fit: cover;
             background: #fff;
             box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-            padding: 4px;
-        }
-        .school-name {
-            color: #fff;
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-left: 10px;
         }
         .btn-accent {
             background-color: #FF9933 !important;
@@ -55,7 +62,7 @@ $school_logo = getSchoolConfig('school_logo', '');
         @media (max-width: 991px) {
             .logo-img { height: 32px; }
             .nav-link-custom { padding: 8px 10px; }
-            .school-name { font-size: 1rem; }
+            .circle-logo { width: 32px; height: 32px; margin-left: 6px; margin-right: 6px; }
         }
         .circle-logo {
             width: 40px;
@@ -80,26 +87,97 @@ $school_logo = getSchoolConfig('school_logo', '');
             opacity: 0;
             pointer-events: none;
         }
+        :root {
+            --color-primary: #1E2A44;
+            --color-accent: #F5A623;
+            --color-red: #D32F2F;
+        }
         .navbar {
-            background-color: #1E2A44;
+            background-color: var(--color-primary);
             color: #fff;
             box-shadow: 0 4px 16px rgba(30, 42, 68, 0.3);
             transition: height 0.3s ease, box-shadow 0.3s ease;
         }
-        .navbar-brand {
-            display: flex;
-            align-items: center;
+        #navbar {
+            height: 80px;
+        }
+        #navbar.navbar-shrink {
+            height: 70px;
+            box-shadow: 0 6px 20px rgba(30, 42, 68, 0.4);
+        }
+        .navbar-brand img {
+            max-height: 100%;
+            filter: brightness(0) invert(1);
+            opacity: 1 !important;
+            display: block !important;
+            visibility: visible !important;
+            transition: transform 0.3s ease;
+        }
+        .navbar-toggler {
+            border: none;
+            background: linear-gradient(135deg, var(--color-accent), #FFCD70);
+            padding: 0.5rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3);
+            width: 40px;
+            height: 40px;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .navbar-toggler:hover {
+            transform: scale(1.1);
+            background: var(--color-red);
+        }
+        .navbar-toggler-icon-custom {
+            width: 20px;
+            height: 20px;
+            position: relative;
+            background: var(--color-red);
+        }
+        .navbar-toggler-icon-custom::before,
+        .navbar-toggler-icon-custom::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+        .navbar-toggler-icon-custom::before {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .navbar-toggler-icon-custom::after {
+            bottom: 50%;
+            transform: translateY(50%);
+        }
+        .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon-custom::before {
+            transform: translateY(-50%) rotate(45deg);
+        }
+        .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon-custom::after {
+            transform: translateY(50%) rotate(-45deg);
+        }
+        /* Fix for Bootstrap nav-pills and nav-tabs active state */
+        .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+            background-color: #D32F2F !important;
+            color: #fff !important;
+        }
+        .nav-tabs .nav-link.active, .nav-tabs .show > .nav-link {
+            color: #D32F2F !important;
+            border-color: #D32F2F #D32F2F #fff !important;
+            background: #fff !important;
+            font-weight: 700;
+        }
+        .nav-tabs .nav-link {
+            color: #1E2A44;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg bg-primary text-white shadow-lg py-3 fixed-top" id="navbar">
         <div class="container-fluid">
-            <div class="navbar-brand d-flex align-items-center">
-                <?php if ($school_logo): ?>
-                    <img src="<?= htmlspecialchars($school_logo) ?>" alt="School Logo" class="logo-img">
-                <?php endif; ?>
-                <span class="school-name"><?= htmlspecialchars($school_name) ?></span>
+            <div class="d-flex align-items-center">
+                <img src="<?= htmlspecialchars($logo) ?>" alt="School Logo" class="logo-img me-3">
             </div>
             <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -113,15 +191,14 @@ $school_logo = getSchoolConfig('school_logo', '');
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="user_portal/register_form.php"><i class="fas fa-user-plus me-2"></i>Registration</a></li>
                 </ul>
                 <div class="d-flex align-items-center ms-3">
-                    <img src="../images/flag.jpeg" alt="Flag" class="circle-logo">
-                    <img src="../images/cm.jpeg" alt="CM" class="circle-logo">
+                    <img src="../images/flag.jpeg" alt="Telangana Flag" class="circle-logo">
+                    <img src="../images/cm.jpeg" alt="CM of Telangana" class="circle-logo">
                     <img src="../images/edu.jpeg" alt="Education Minister" class="circle-logo">
                     <button id="authButton" class="btn btn-accent text-white fw-semibold ms-3" data-bs-toggle="modal" data-bs-target="#authModal">Login / Signup</button>
                 </div>
             </div>
         </div>
     </nav>
-    
     <!-- Login/Signup Modal -->
     <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -183,14 +260,14 @@ $school_logo = getSchoolConfig('school_logo', '');
                             </div>
                         </div>
                         <div class="tab-pane fade" id="admin-auth" role="tabpanel" aria-labelledby="admin-tab">
-                            <form action="../admin/login.php" method="post">
+                            <form>
                                 <div class="mb-3">
                                     <label for="admin-login-email" class="form-label">Admin Email</label>
-                                    <input type="email" class="form-control" name="email" id="admin-login-email" required>
+                                    <input type="email" class="form-control" id="admin-login-email" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="admin-login-password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" name="password" id="admin-login-password" required>
+                                    <input type="password" class="form-control" id="admin-login-password" required>
                                 </div>
                                 <button type="submit" class="btn btn-danger w-100">Login as Admin</button>
                             </form>
@@ -200,24 +277,65 @@ $school_logo = getSchoolConfig('school_logo', '');
             </div>
         </div>
     </div>
-    
+    <!-- Scripts -->
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Navbar scroll behavior
+        // Consolidated scroll event listener
         document.addEventListener('DOMContentLoaded', () => {
             const navbar = document.getElementById('navbar');
             let lastScrollY = window.scrollY;
 
             window.addEventListener('scroll', () => {
                 const currentScroll = window.pageYOffset;
+                // Handle navbar hide/show
                 if (currentScroll > lastScrollY && currentScroll > 80) {
                     navbar.classList.add('hide-navbar');
                 } else {
                     navbar.classList.remove('hide-navbar');
                 }
+                // Update box-shadow on scroll for subtle effect
+                if (currentScroll > 100) {
+                    navbar.style.boxShadow = '0 6px 20px rgba(30, 42, 68, 0.4)';
+                } else {
+                    navbar.style.boxShadow = '0 4px 16px rgba(30, 42, 68, 0.3)';
+                }
                 lastScrollY = currentScroll;
             });
+
+            // Modal cleanup
+            const authModal = document.getElementById('authModal');
+            authModal.addEventListener('hidden.bs.modal', () => {
+                // Remove modal backdrop
+                document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                // Reset modal classes and styles
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                console.log('Auth modal closed and cleaned up');
+            });
+
+            authModal.addEventListener('shown.bs.modal', () => {
+                console.log('Auth modal opened');
+            });
         });
+
+        // Move these functions OUTSIDE so they are global!
+        function handleLogin(type) {
+            console.log(`Login attempt: ${type}`);
+            // Add your login logic here (e.g., AJAX request)
+            const authModal = document.getElementById('authModal');
+            const modal = bootstrap.Modal.getInstance(authModal);
+            modal.hide();
+        }
+
+        function handleSignup() {
+            console.log('Signup attempt');
+            // Add your signup logic here (e.g., AJAX request)
+            const authModal = document.getElementById('authModal');
+            const modal = bootstrap.Modal.getInstance(authModal);
+            modal.hide();
+        }
     </script>
 </body>
 </html>
