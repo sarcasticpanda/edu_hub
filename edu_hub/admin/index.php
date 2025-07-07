@@ -5,21 +5,22 @@ require_once 'includes/db.php';
 // Get quick stats
 $stats = [];
 try {
-    $stats['notices'] = $pdo->query("SELECT COUNT(*) FROM notices")->fetchColumn();
-    $stats['gallery_images'] = $pdo->query("SELECT COUNT(*) FROM gallery_images")->fetchColumn();
-    $stats['who_members'] = $pdo->query("SELECT COUNT(*) FROM who_is_who")->fetchColumn();
+    $stats['notices'] = $pdo->query("SELECT COUNT(*) FROM notices WHERE is_active = 1")->fetchColumn();
+    $stats['gallery_images'] = $pdo->query("SELECT COUNT(*) FROM gallery_images WHERE is_active = 1")->fetchColumn();
+    $stats['who_members'] = $pdo->query("SELECT COUNT(*) FROM who_is_who WHERE is_active = 1")->fetchColumn();
     $stats['achievements'] = $pdo->query("SELECT COUNT(*) FROM achievements")->fetchColumn();
 } catch (Exception $e) {
-    // Tables might not exist yet
     $stats = ['notices' => 0, 'gallery_images' => 0, 'who_members' => 0, 'achievements' => 0];
 }
+
+$school_name = getSchoolConfig('school_name', 'School Management System');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal - St. Xavier's College</title>
+    <title>Admin Portal - <?= htmlspecialchars($school_name) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -87,16 +88,19 @@ try {
 <body>
     <div class="admin-container">
         <div class="admin-header">
-            <h1><i class="fas fa-graduation-cap me-3"></i>St. Xavier's College Admin Portal</h1>
+            <h1><i class="fas fa-graduation-cap me-3"></i><?= htmlspecialchars($school_name) ?> - Admin Portal</h1>
             <p class="mb-0">Manage your website content with ease</p>
         </div>
 
         <div class="admin-nav">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Dashboard</h5>
-                <a href="logout.php" class="btn btn-outline-danger">
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                </a>
+                <div>
+                    <span class="me-3">Welcome, <?= htmlspecialchars($_SESSION['admin_name'] ?? 'Admin') ?></span>
+                    <a href="logout.php" class="btn btn-outline-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -107,7 +111,7 @@ try {
                     <div class="stats-card">
                         <i class="fas fa-bell"></i>
                         <h3><?= $stats['notices'] ?></h3>
-                        <p>Notices</p>
+                        <p>Active Notices</p>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -121,7 +125,7 @@ try {
                     <div class="stats-card">
                         <i class="fas fa-users"></i>
                         <h3><?= $stats['who_members'] ?></h3>
-                        <p>Who is Who</p>
+                        <p>Team Members</p>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -135,6 +139,15 @@ try {
 
             <!-- Navigation Cards -->
             <div class="row">
+                <div class="col-md-4">
+                    <a href="school_config.php" class="nav-card">
+                        <div class="text-center">
+                            <i class="fas fa-cog text-success"></i>
+                            <h5>School Configuration</h5>
+                            <p class="text-muted">Configure school name, logo, and basic settings</p>
+                        </div>
+                    </a>
+                </div>
                 <div class="col-md-4">
                     <a href="homepage.php" class="nav-card">
                         <div class="text-center">
@@ -181,15 +194,6 @@ try {
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="navbar.php" class="nav-card">
-                        <div class="text-center">
-                            <i class="fas fa-bars text-dark"></i>
-                            <h5>Navbar & Logo</h5>
-                            <p class="text-muted">Update navigation and logo</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
                     <a href="footer.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-grip-horizontal text-secondary"></i>
@@ -203,7 +207,7 @@ try {
                         <div class="text-center">
                             <i class="fas fa-trophy text-warning"></i>
                             <h5>Achievements</h5>
-                            <p class="text-muted">Manage college achievements and awards</p>
+                            <p class="text-muted">Manage school achievements and awards</p>
                         </div>
                     </a>
                 </div>
@@ -222,14 +226,24 @@ try {
             <div class="quick-actions">
                 <h5 class="mb-3">Quick Actions</h5>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <a href="notices.php?action=add" class="btn btn-primary w-100 mb-2">
                             <i class="fas fa-plus me-2"></i>Add New Notice
                         </a>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <a href="gallery.php?action=upload" class="btn btn-success w-100 mb-2">
                             <i class="fas fa-upload me-2"></i>Upload Gallery Images
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="whoiswho.php?action=add" class="btn btn-info w-100 mb-2">
+                            <i class="fas fa-user-plus me-2"></i>Add Team Member
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="../check/user/index.php" target="_blank" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-external-link-alt me-2"></i>View Website
                         </a>
                     </div>
                 </div>
