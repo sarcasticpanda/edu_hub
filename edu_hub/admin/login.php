@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($admin && password_verify($password, $admin['password_hash'])) {
             $_SESSION['admin_id'] = $admin['id'];
             $_SESSION['admin_name'] = $admin['name'];
+            $_SESSION['admin_email'] = $admin['email'];
             header('Location: index.php');
             exit;
         } else {
@@ -23,6 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (Exception $e) {
         $error = 'Database error: ' . $e->getMessage();
     }
+}
+
+// Check if already logged in
+if (isset($_SESSION['admin_id'])) {
+    header('Location: index.php');
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -76,10 +83,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: all 0.3s ease;
         }
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: #764ba2;
         }
     </style>
 </head>
@@ -101,13 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="email" class="form-label">
                         <i class="fas fa-envelope me-2"></i>Email Address
                     </label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+                    <input type="email" class="form-control" id="email" name="email" value="admin@school.edu" required>
                 </div>
                 <div class="mb-4">
                     <label for="password" class="form-label">
                         <i class="fas fa-lock me-2"></i>Password
                     </label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <input type="password" class="form-control" id="password" name="password" value="admin123" required>
                 </div>
                 <button type="submit" class="btn btn-login btn-primary w-100">
                     <i class="fas fa-sign-in-alt me-2"></i>Login to Admin Panel
@@ -118,6 +133,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <small class="text-muted">
                     Default: admin@school.edu / admin123
                 </small>
+                <br>
+                <a href="../check/user/index.php" class="back-link">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Website
+                </a>
             </div>
         </div>
     </div>
