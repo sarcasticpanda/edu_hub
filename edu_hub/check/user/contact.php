@@ -1,3 +1,38 @@
+<?php
+// Connect to the same DB as admin
+$host = 'localhost';
+$db   = 'school_management_system';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    $pdo = null;
+}
+$footer_data = [];
+if ($pdo) {
+    $result = $pdo->query("SELECT section, content FROM footer_content");
+    while ($row = $result->fetch()) {
+        $footer_data[$row['section']] = $row['content'];
+    }
+}
+// Fetch school info from homepage_content
+$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
+// Fetch contact info from school_config
+$school_address = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_address'")->fetchColumn();
+$school_phone = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_phone'")->fetchColumn();
+$school_email = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_email'")->fetchColumn();
+$office_hours = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'office_hours'")->fetchColumn();
+$google_maps = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'google_maps'")->fetchColumn();
+$school_logo = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_logo'")->fetchColumn();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,11 +149,32 @@
         <div class="container mx-auto px-4">
             <div class="header-crest"></div>
             <h1>Contact Us</h1>
+            <!-- School Logo and Name -->
+            <div class="text-center mb-4">
+                <img src="<?= $school_logo ? htmlspecialchars($school_logo) : '../images/school.png' ?>" alt="School Logo" class="logo-img mb-2" style="max-height: 80px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0002;">
+                <h1 class="fw-bold" style="font-size: 2.2rem; color: #1E2A44; letter-spacing: 1px;">
+                    <?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?>
+                </h1>
+            </div>
+            <!-- Contact Details -->
+            <div class="contact-details">
+                <h3>Contact Details</h3>
+                <p><strong>College Address:</strong> <?= htmlspecialchars($school_address) ?></p>
+                <p><strong>Phone Number:</strong> <?= htmlspecialchars($school_phone) ?></p>
+                <p><strong>Email Address:</strong> <?= htmlspecialchars($school_email) ?></p>
+                <p><strong>Office Hours:</strong><br><?= nl2br(htmlspecialchars($office_hours)) ?></p>
+            </div>
+            <!-- Google Maps Embed -->
+            <?php if ($google_maps): ?>
+            <div class="google-maps-embed mt-4">
+                <?= $google_maps ?>
+            </div>
+            <?php endif; ?>
             <!-- Contact Information -->
             <div class="contact-info">
-                <p><i class="fas fa-map-marker-alt"></i> St. Xavier's College, 5 Mahapalika Marg, Mumbai, Maharashtra 400001, India</p>
-                <p><i class="fas fa-phone"></i> Phone: +91 22 2262 0662</p>
-                <p><i class="fas fa-envelope"></i> Email: info@stxavierscollege.edu</p>
+                <p><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($footer_data['contact_address'] ?? 'St. Xavier\'s College, 5 Mahapalika Marg, Mumbai, Maharashtra 400001, India') ?></p>
+                <p><i class="fas fa-phone"></i> Phone: <?= htmlspecialchars($footer_data['contact_phone'] ?? '+91 22 2262 0662') ?></p>
+                <p><i class="fas fa-envelope"></i> Email: <?= htmlspecialchars($footer_data['contact_email'] ?? 'info@stxavierscollege.edu') ?></p>
             </div>
             <!-- Contact Form -->
             <div class="contact-form">

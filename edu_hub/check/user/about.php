@@ -272,6 +272,29 @@
                 height: 140px;
             }
         }
+        .achievement-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px rgba(30,42,68,0.10);
+            padding: 2rem 1rem;
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+        .achievement-card:hover {
+            box-shadow: 0 8px 32px rgba(211,47,47,0.18), 0 2px 8px rgba(30,42,68,0.10);
+            transform: scale(1.05);
+        }
+        .achievements-heading {
+            font-size: 2.7rem;
+            font-weight: 1000;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #20c997 0%, #D32F2F 70%, #ff1744 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            margin-bottom: 2.5rem;
+            font-family: 'Poppins', 'Montserrat', Arial, sans-serif;
+        }
     </style>
 </head>
 <body class="font-open-sans text-gray-800 bg-gray-50" style="background: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);">
@@ -281,10 +304,10 @@
             <section class="container py-5 text-center mx-auto" style="width: 100%;">
                 <div class="mb-2" style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.15rem; background: linear-gradient(90deg, var(--primary-teal) 40%, var(--accent-red) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; letter-spacing: 2px; text-transform: uppercase; display: inline-block;">Know Everything... About Us</div>
                 <h1 class="mb-2" style="font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--dark-gray);">
-                    St. Xavier's <span style="color: var(--accent-red);">College</span>
+                    <span style="color: #D32F2F;">About</span> <span style="color: var(--dark-gray);"><?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?></span>
                 </h1>
                 <div class="mb-4" style="font-size: 1.15rem; color: #444; font-family: 'Roboto', sans-serif; font-weight: 500; max-width: 700px; margin: 0 auto; background: transparent; padding: 1rem; border-radius: 8px;">
-                    Empowering Excellence, Fostering Growth. St. Xavier's College provides your academic journey with the environment, resources, and inspiration needed to achieve your highest potential.
+                    <?= 'Empowering Excellence, Fostering Growth. ' . htmlspecialchars($school_info['title'] ?? 'Your School Name') . ' provides your academic journey with the environment, resources, and inspiration needed to achieve your highest potential.' ?>
                 </div>
                 <img src="../images/bitcblog1.jpg" alt="St. Xavier's College Campus" style="width: 70%; max-width: 900px; border-radius: 18px; box-shadow: 0 4px 24px rgba(30,42,68,0.13); margin: 0 auto; display: block; border: 4px solid rgba(26, 188, 156, 0.2);">
             </section>
@@ -372,29 +395,48 @@ Responsibility & Service.  Lifelong Learning.
                 </div>
             </section>
             <!-- Achievements Section -->
-            <section class="container py-4 text-center" style="background: transparent; margin-bottom: 0;">
-                <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 2.5rem; margin-bottom: 2.5rem; color: var(--dark-gray); background: linear-gradient(90deg, var(--primary-teal) 0%, var(--accent-red) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
-                    <span style="color: var(--dark-gray);">Our</span> <span style="color: var(--accent-red);">Achievements</span>
-                </h2>
+            <section class="container py-5">
+                <h2 class="achievements-heading text-center mb-5">Our Achievements</h2>
                 <div class="row justify-content-center">
-                    <div class="col-md-4 mb-4">
-                        <div style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(30,42,68,0.10); padding: 2rem 1rem; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', 'Poppins', Arial, sans-serif; font-size: 1.25rem; font-weight: 600; color: var(--dark-gray); border: 2px solid rgba(26, 188, 156, 0.15);">
-                            <i class="fas fa-trophy me-2" style="font-size: 1.5rem; color: var(--primary-teal);"></i>
-                            100% Placement Rate in 2024
+                    <?php
+                    // Connect to the same DB as admin
+                    $host = 'localhost';
+                    $db   = 'school_management_system';
+                    $user = 'root';
+                    $pass = '';
+                    $charset = 'utf8mb4';
+                    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+                    $options = [
+                        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                        PDO::ATTR_EMULATE_PREPARES   => false,
+                    ];
+                    try {
+                        $pdo = new PDO($dsn, $user, $pass, $options);
+                    } catch (PDOException $e) {
+                        $pdo = null;
+                    }
+                    $achievements = $pdo ? $pdo->query("SELECT * FROM achievements ORDER BY created_at DESC LIMIT 6")->fetchAll() : [];
+                    ?>
+                    <?php if (empty($achievements)): ?>
+                        <div class="alert alert-info">No achievements found.</div>
+                    <?php else: ?>
+                        <?php foreach ($achievements as $achievement): ?>
+                        <div class="col-md-4 mb-4">
+                            <div class="card achievement-card p-4 text-center border-0" style="min-height:120px;">
+                                <p class="mb-0" style="font-size:1.3rem; font-weight:600; color:#D32F2F;">
+                                    <i class="<?= htmlspecialchars($achievement['icon']) ?> me-2" style="color:#2ec4b6; font-size:2rem;"></i>
+                                    <?= htmlspecialchars_decode($achievement['title']) ?>
+                                </p>
+                                <?php if (!empty($achievement['description'])): ?>
+                                    <div class="text-muted small mt-2" style="font-size:1rem; color:#888;">
+                                        <?= htmlspecialchars($achievement['description']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-4 mb-4">
-                        <div style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(30,42,68,0.10); padding: 2rem 1rem; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', 'Poppins', Arial, sans-serif; font-size: 1.25rem; font-weight: 600; color: var(--dark-gray); border: 2px solid rgba(26, 188, 156, 0.15);">
-                            <i class="fas fa-award me-2" style="font-size: 1.5rem; color: var(--primary-teal);"></i>
-                            Awarded <span style="color: var(--accent-red);">Best College</span> 2023
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-4">
-                        <div style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(30,42,68,0.10); padding: 2rem 1rem; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', 'Poppins', Arial, sans-serif; font-size: 1.25rem; font-weight: 600; color: var(--dark-gray); border: 2px solid rgba(26, 188, 156, 0.15);">
-                            <i class="fas fa-users me-2" style="font-size: 1.5rem; color: var(--primary-teal);"></i>
-                            Over 5000 <span style="color: var(--accent-red);">Alumni</span> Worldwide
-                        </div>
-                    </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </section>
         </div>

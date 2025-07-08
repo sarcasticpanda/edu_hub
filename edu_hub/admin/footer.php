@@ -33,6 +33,9 @@ $result = $pdo->query("SELECT section, content FROM footer_content");
 while ($row = $result->fetch()) {
     $footer_data[$row['section']] = $row['content'];
 }
+
+// Fetch school info from homepage_content
+$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
 ?>
 
 <!DOCTYPE html>
@@ -155,6 +158,12 @@ while ($row = $result->fetch()) {
             </div>
         </div>
     </div>
+
+    <footer class="footer mt-auto py-3 bg-light text-center">
+        <div class="container">
+            <span class="text-muted">&copy; <?= date('Y') ?> <?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?>. All rights reserved.</span>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

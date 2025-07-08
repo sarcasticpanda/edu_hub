@@ -9,14 +9,65 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['add_notice'])) {
-            $stmt = $pdo->prepare("INSERT INTO notices (title, content, posted_by, created_at) VALUES (?, ?, ?, NOW())");
-            $stmt->execute([$_POST['title'], $_POST['content'], $_POST['posted_by']]);
+            $attachment_path = null;
+            $attachment_type = null;
+            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['attachment'];
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $allowed = ['pdf', 'png', 'jpg', 'jpeg', 'gif'];
+                if (in_array($ext, $allowed)) {
+                    $filename = 'notice_' . time() . '_' . uniqid() . '.' . $ext;
+                    $attachments_dir = realpath(__DIR__ . '/../check/notice_attachments/');
+                    if ($attachments_dir !== false) {
+                        $target = $attachments_dir . DIRECTORY_SEPARATOR . $filename;
+                        if (move_uploaded_file($file['tmp_name'], $target)) {
+                            $attachment_path = $filename;
+                            $attachment_type = ($ext === 'pdf') ? 'pdf' : 'image';
+                        }
+                    }
+                }
+            }
+            $stmt = $pdo->prepare("INSERT INTO notices (title, subheading, content, posted_by, created_at, attachment_path, attachment_type) VALUES (?, ?, ?, ?, NOW(), ?, ?)");
+            $stmt->execute([
+                $_POST['title'],
+                $_POST['subheading'],
+                $_POST['content'],
+                $_POST['posted_by'],
+                $attachment_path,
+                $attachment_type
+            ]);
             $message = 'Notice added successfully!';
         }
         
         if (isset($_POST['update_notice'])) {
-            $stmt = $pdo->prepare("UPDATE notices SET title = ?, content = ?, posted_by = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->execute([$_POST['title'], $_POST['content'], $_POST['posted_by'], $_POST['notice_id']]);
+            $attachment_path = $_POST['existing_attachment'] ?? null;
+            $attachment_type = $_POST['existing_attachment_type'] ?? null;
+            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['attachment'];
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $allowed = ['pdf', 'png', 'jpg', 'jpeg', 'gif'];
+                if (in_array($ext, $allowed)) {
+                    $filename = 'notice_' . time() . '_' . uniqid() . '.' . $ext;
+                    $attachments_dir = realpath(__DIR__ . '/../check/notice_attachments/');
+                    if ($attachments_dir !== false) {
+                        $target = $attachments_dir . DIRECTORY_SEPARATOR . $filename;
+                        if (move_uploaded_file($file['tmp_name'], $target)) {
+                            $attachment_path = $filename;
+                            $attachment_type = ($ext === 'pdf') ? 'pdf' : 'image';
+                        }
+                    }
+                }
+            }
+            $stmt = $pdo->prepare("UPDATE notices SET title = ?, subheading = ?, content = ?, posted_by = ?, updated_at = NOW(), attachment_path = ?, attachment_type = ? WHERE id = ?");
+            $stmt->execute([
+                $_POST['title'],
+                $_POST['subheading'],
+                $_POST['content'],
+                $_POST['posted_by'],
+                $attachment_path,
+                $attachment_type,
+                $_POST['notice_id']
+            ]);
             $message = 'Notice updated successfully!';
         }
         
@@ -117,9 +168,11 @@ if (isset($_GET['edit'])) {
             <!-- Add/Edit Notice Form -->
             <div class="notice-form">
                 <h4><i class="fas fa-plus-circle text-primary me-2"></i><?= $edit_notice ? 'Edit Notice' : 'Add New Notice' ?></h4>
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     <?php if ($edit_notice): ?>
                         <input type="hidden" name="notice_id" value="<?= $edit_notice['id'] ?>">
+                        <input type="hidden" name="existing_attachment" value="<?= htmlspecialchars($edit_notice['attachment_path'] ?? '') ?>">
+                        <input type="hidden" name="existing_attachment_type" value="<?= htmlspecialchars($edit_notice['attachment_type'] ?? '') ?>">
                     <?php endif; ?>
                     
                     <div class="row">
@@ -130,8 +183,27 @@ if (isset($_GET['edit'])) {
                                        value="<?= htmlspecialchars($edit_notice['title'] ?? '') ?>" required>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Notice Subheading</label>
+                                <input type="text" name="subheading" class="form-control" 
+                                       value="<?= htmlspecialchars($edit_notice['subheading'] ?? '') ?>">
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label">Notice Content</label>
                                 <textarea name="content" class="form-control" rows="4" required><?= htmlspecialchars($edit_notice['content'] ?? '') ?></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Attachment (PDF or Image)</label>
+                                <input type="file" name="attachment" class="form-control" accept=".pdf,image/*">
+                                <?php if (!empty($edit_notice['attachment_path'])): ?>
+                                    <div class="mt-2">
+                                        <strong>Current Attachment:</strong>
+                                        <?php if ($edit_notice['attachment_type'] === 'pdf'): ?>
+                                            <a href="../check/notice_attachments/<?= htmlspecialchars($edit_notice['attachment_path']) ?>" target="_blank">View PDF</a>
+                                        <?php elseif ($edit_notice['attachment_type'] === 'image'): ?>
+                                            <img src="../check/notice_attachments/<?= htmlspecialchars($edit_notice['attachment_path']) ?>" alt="Attachment" style="max-width: 120px; max-height: 80px; border-radius: 6px;">
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="col-md-4">

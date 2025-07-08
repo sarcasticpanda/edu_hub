@@ -1,4 +1,49 @@
 <?php include 'navbar.php'; ?>
+<?php
+// Connect to the same DB as admin
+$host = 'localhost';
+$db   = 'school_management_system';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    die('Database connection failed: ' . $e->getMessage());
+}
+$hero_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'hero' AND title != 'Hero Image' LIMIT 1")->fetch();
+$hero_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'hero' AND title = 'Hero Image' LIMIT 1")->fetchColumn();
+$about_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'about' AND title != 'About Image' LIMIT 1")->fetch();
+$about_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'about' AND title = 'About Image' LIMIT 1")->fetchColumn();
+// Fetch dynamic content for homepage sections
+$notices = $pdo->query("SELECT * FROM notices WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6")->fetchAll();
+$who_members = $pdo->query("SELECT * FROM who_is_who WHERE is_active = 1 ORDER BY display_order ASC, created_at DESC LIMIT 12")->fetchAll();
+$achievements = $pdo->query("SELECT * FROM achievements ORDER BY created_at DESC LIMIT 6")->fetchAll();
+// Fetch school config for branding and images
+$school_config = [];
+foreach ($pdo->query("SELECT config_key, config_value FROM school_config") as $row) {
+    $school_config[$row['config_key']] = $row['config_value'];
+}
+// Fetch school info from homepage_content
+$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
+
+function render_hero_title($title) {
+    $title_trim = ltrim($title);
+    if (stripos($title_trim, 'WELCOME TO') === 0) {
+        // Already starts with 'WELCOME TO', highlight it
+        $rest = trim(substr($title_trim, strlen('WELCOME TO')));
+        return '<span style="color: #D32F2F;">WELCOME TO</span> <span class="text-white">' . htmlspecialchars($rest) . '</span>';
+    } else {
+        return '<span style="color: #D32F2F;">WELCOME TO</span> <span class="text-white">' . htmlspecialchars($title) . '</span>';
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,6 +134,46 @@
             cursor: pointer;
             transition: box-shadow 0.25s, transform 0.25s, background 0.25s;
             background: #fff;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 1.2rem 1.2rem 1.1rem 1.2rem;
+            text-align: left;
+            box-shadow: 0 2px 12px 0 rgba(30,42,68,0.10), 0 6px 24px 0 rgba(255,255,255,0.10);
+            margin-bottom: 0.5rem;
+        }
+        .notice-title {
+            font-family: 'Roboto Slab', 'Merriweather', 'Georgia', serif;
+            font-size: 1.22rem;
+            font-weight: 900;
+            margin-bottom: 0.18rem;
+            margin-top: -0.3rem;
+            text-align: left;
+            color: #D32F2F;
+            letter-spacing: 0.5px;
+            text-shadow: none;
+            text-transform: none;
+        }
+        .notice-subheading {
+            font-family: 'Roboto', 'Poppins', Arial, sans-serif;
+            font-size: 1.01rem;
+            font-weight: 700;
+            color: #00539C;
+            margin-bottom: 0.12rem;
+            text-align: left;
+            letter-spacing: 0.5px;
+            opacity: 1;
+            text-transform: uppercase;
+        }
+        .notice-preview {
+            font-family: 'Segoe UI', 'Open Sans', Arial, sans-serif;
+            font-size: 1.09rem;
+            font-weight: 600;
+            color: #1E2A44;
+            text-align: left;
+            opacity: 0.96;
+            margin-top: 0.45rem;
         }
         .notice-card:hover {
             box-shadow: 0 12px 36px rgba(0,83,156,0.18);
@@ -394,10 +479,14 @@
 </head>
 <body class="font-open-sans text-gray-800 bg-gray-50 min-h-screen flex flex-col">
     <!-- Extended Hero Section with Photo -->
-    <header class="bg-cover bg-center min-h-[600px] flex items-center mt-0 relative w-full" style="background-image: linear-gradient(to right, rgba(30, 42, 68, 0.7), rgba(31, 47, 77, 0.7)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); padding-top: 0;">
+    <header class="bg-cover bg-center min-h-[600px] flex items-center mt-0 relative w-full" style="background-image: linear-gradient(to right, rgba(30, 42, 68, 0.7), rgba(31, 47, 77, 0.7)), url('<?= $hero_image ? htmlspecialchars($hero_image) : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' ?>'); padding-top: 0;">
         <div class="container px-4 text-center animate-fade-in">
-            <h1 class="text-5xl md:text-6xl font-poppins font-extrabold text-white mb-4 drop-shadow-lg">WELCOME TO ST. XAVIER'S <span style="color: #D32F2F;">COLLEGE</span></h1>
-            <p class="text-xl md:text-2xl font-open-sans text-white mb-6 drop-shadow-md">Where <span style="color: #D32F2F;">Excellence</span> Meets Opportunity</p>
+            <h1 class="text-5xl md:text-6xl font-poppins font-extrabold mb-4 drop-shadow-lg">
+                <?= render_hero_title($hero_content['title'] ?? 'Your School Name') ?>
+            </h1>
+            <p class="text-xl md:text-2xl font-open-sans text-white mb-6 drop-shadow-md">
+                <?= htmlspecialchars($hero_content['content'] ?? 'Where Excellence Meets Opportunity') ?>
+            </p>
             <a href="about.php" class="btn btn-primary rounded-full px-6 py-3 text-lg bg-[#F5A623] hover:bg-[#D32F2F] text-white transition-transform duration-300 hover:scale-110 animate-pulse-slow">Learn More</a>
         </div>
         <div class="absolute bottom-0 w-full h-1 bg-gradient-to-r from-[#D32F2F] to-transparent"></div>
@@ -407,13 +496,21 @@
     <section class="container px-4 py-12 bg-white text-center">
         <div class="row align-items-center justify-content-center py-4 about-main-card" style="min-height: 420px;">
             <div class="col-md-6 mb-4 mb-md-0">
-                <img src="../images/bitcblog1.jpg" alt="College Campus" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                <?php if (!empty($school_config['about_image'])): ?>
+                    <img src="<?= htmlspecialchars($school_config['about_image']) ?>" alt="About Image" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                <?php elseif ($about_image): ?>
+                    <img src="<?= htmlspecialchars($about_image) ?>" alt="About Image" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                <?php else: ?>
+                    <img src="../images/bitcblog1.jpg" alt="College Campus" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                <?php endif; ?>
             </div>
             <div class="col-md-6 text-left">
-                <h2 class="text-4xl font-poppins font-bold text-[#D32F2F] mb-4 animate-slide-in">About St. Xavier's <span style="color: #D32F2F;">College</span></h2>
-                <p class="about-bold-text text-gray-700 leading-relaxed mb-2">St. Xavier's College is a premier institution dedicated to fostering academic <span style="color: #D32F2F;">excellence</span>, innovation, and personal growth. With a rich history and a vibrant community, we offer diverse programs and opportunities for students to thrive in a supportive environment.</p>
-                <p class="about-bold-text text-gray-700 leading-relaxed mb-2">Our campus is equipped with state-of-the-art facilities, modern classrooms, and a dynamic faculty committed to nurturing talent. We believe in holistic development, encouraging students to participate in extracurricular activities, research, and community service.</p>
-                <p class="about-bold-text text-gray-700 leading-relaxed mb-2">Join us at St. Xavier's College to embark on a journey of knowledge, growth, and lifelong friendships. Discover your potential and become a part of our legacy of excellence.</p>
+                <h2 class="text-4xl font-poppins font-bold mb-4 animate-slide-in">
+                    <span style="color: #D32F2F;">About</span> <span class="text-[#1E2A44]"><?= htmlspecialchars($about_content['title'] ?? 'Your School Name') ?></span>
+                </h2>
+                <p class="about-bold-text text-gray-700 leading-relaxed mb-2">
+                    <?= nl2br(htmlspecialchars($about_content['content'] ?? "St. Xavier's College is a premier institution dedicated to fostering academic <span style='color: #D32F2F;'>excellence</span>, innovation, and personal growth. With a rich history and a vibrant community, we offer diverse programs and opportunities for students to thrive in a supportive environment.")) ?>
+                </p>
             </div>
         </div>
     </section>
@@ -425,49 +522,57 @@
                 <div class="card p-4 shadow-lg mb-4 notice-board-main-card">
                     <h2 class="text-3xl font-poppins font-bold text-[#D32F2F] mb-4 animate-slide-in">Notice Board</h2>
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal1">
-                                <h3 class="text-xl font-semibold text-[#1E2A44] mb-1"><i class="fas fa-calendar-alt me-2"></i>Exam Dates</h3>
-                                <div class="text-sm text-gray-500 mb-1">Posted: July 1, 2025</div>
-                                <p class="text-gray-600 mb-0">Mid-term exams: July 15-20, 2025. Final exams: August 10-15, 2025.</p>
+                        <?php if (empty($notices)): ?>
+                            <div class="alert alert-info">No notices found.</div>
+                        <?php else: ?>
+                            <?php foreach ($notices as $notice): ?>
+                            <div class="col-md-6">
+                                <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal<?= $notice['id'] ?>">
+                                    <h5 class="notice-title mb-1"> <?= htmlspecialchars($notice['title']) ?> </h5>
+                                    <?php if (!empty($notice['subheading'])): ?>
+                                        <div class="notice-subheading text-muted mb-1" style="font-size: 1rem;"> <?= htmlspecialchars($notice['subheading']) ?> </div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal2">
-                                <h3 class="text-xl font-semibold text-[#1E2A44] mb-1"><i class="fas fa-holiday me-2"></i>Upcoming Holidays</h3>
-                                <div class="text-sm text-gray-500 mb-1">Posted: June 28, 2025</div>
-                                <p class="text-gray-600 mb-0">Independence Day: August 15, 2025. Dasara Break: October 1-5, 2025.</p>
+                            <!-- Modal for full notice -->
+                            <div class="modal fade" id="noticeModal<?= $notice['id'] ?>" tabindex="-1" aria-labelledby="noticeModalLabel<?= $notice['id'] ?>" aria-hidden="true">
+                              <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title fw-bold" id="noticeModalLabel<?= $notice['id'] ?>" style="color:#D32F2F; font-family:'Roboto Slab','Merriweather',serif; letter-spacing:0.5px;">
+                                      <?= htmlspecialchars($notice['title']) ?>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <?php if (!empty($notice['subheading'])): ?>
+                                      <div class="mb-2" style="color:#00539C; font-family:'Roboto',Arial,sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:1.05rem;">
+                                        <?= htmlspecialchars($notice['subheading']) ?>
+                                      </div>
+                                    <?php endif; ?>
+                                    <div class="mb-2" style="font-size:0.98rem; color:#444;">
+                                      <strong>Uploaded by:</strong> <?= htmlspecialchars($notice['posted_by']) ?>
+                                    </div>
+                                    <?php if (!empty($notice['attachment_path'])): ?>
+                                      <div class="mb-3">
+                                        <strong>Attachment:</strong><br>
+                                        <?php if ($notice['attachment_type'] === 'pdf'): ?>
+                                          <a href="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" target="_blank" class="btn btn-danger btn-sm mt-1"><i class="fas fa-file-pdf me-1"></i>View PDF</a>
+                                        <?php elseif ($notice['attachment_type'] === 'image'): ?>
+                                          <img src="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" alt="Notice Attachment" style="max-width: 100%; max-height: 320px; border-radius: 8px; margin-top: 6px;">
+                                        <?php endif; ?>
+                                      </div>
+                                    <?php endif; ?>
+                                    <div class="mb-3" style="font-family:'Segoe UI','Open Sans',Arial,sans-serif; font-size:1.08rem; color:#222;">
+                                      <?= nl2br(htmlspecialchars($notice['content'])) ?>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal3">
-                                <h3 class="text-xl font-semibold text-[#1E2A44] mb-1"><i class="fas fa-bullhorn me-2"></i>New Admissions</h3>
-                                <div class="text-sm text-gray-500 mb-1">Posted: June 20, 2025</div>
-                                <p class="text-gray-600 mb-0">Admissions for the 2025-26 academic year are open until July 31, 2025.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal4">
-                                <h3 class="text-xl font-semibold text-[#1E2A44] mb-1"><i class="fas fa-bus me-2"></i>Transport Notice</h3>
-                                <div class="text-sm text-gray-500 mb-1">Posted: June 18, 2025</div>
-                                <p class="text-gray-600 mb-0">Bus routes have been updated. Check the transport section for new timings.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal5">
-                                <h3 class="text-xl font-semibold text-[#1E2A44] mb-1"><i class="fas fa-bolt me-2"></i>Power Shutdown</h3>
-                                <div class="text-sm text-gray-500 mb-1">Posted: June 15, 2025</div>
-                                <p class="text-gray-600 mb-0">Scheduled power shutdown on July 10, 2025, from 10 AM to 1 PM.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal6">
-                                <h3 class="text-xl font-semibold text-[#1E2A44] mb-1"><i class="fas fa-chalkboard-teacher me-2"></i>Parent-Teacher Meeting</h3>
-                                <div class="text-sm text-gray-500 mb-1">Posted: June 10, 2025</div>
-                                <p class="text-gray-600 mb-0">Parent-Teacher meeting scheduled for July 18, 2025, at 11 AM in the main hall.</p>
-                            </div>
-                </div>
-            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -621,115 +726,21 @@
      <section class="container px-4 py-12 who-section text-center position-relative">
         <h2 class="who-title">Who is Who</h2>
         <div class="who-carousel-row">
-            <div class="who-card red">
-                <div class="who-bg" style="background-image: url('../images/cm.jpeg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Dr. John Doe</div>
-                    <div class="who-title-role">Principal</div>
-                    <div class="who-desc">Leading with vision and dedication.</div>
+            <?php if (empty($who_members)): ?>
+                <div class="alert alert-info">No team members found.</div>
+            <?php else: ?>
+                <?php foreach ($who_members as $member): ?>
+                <div class="who-card <?= htmlspecialchars($member['color_theme']) ?>">
+                    <div class="who-bg" style="background-image: url('<?= htmlspecialchars($member['image_path']) ?>');"></div>
+                    <div class="who-darken"></div>
+                    <div class="who-card-content">
+                        <div class="who-name"><?= htmlspecialchars($member['name']) ?></div>
+                        <div class="who-title-role"><?= htmlspecialchars($member['position']) ?></div>
+                        <div class="who-desc"><?= htmlspecialchars($member['description']) ?></div>
+                    </div>
                 </div>
-            </div>
-            <div class="who-card blue">
-                <div class="who-bg" style="background-image: url('../images/edu.jpeg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Ms. Priya Sharma</div>
-                    <div class="who-title-role">Vice Principal</div>
-                    <div class="who-desc">Academic excellence and discipline.</div>
-                </div>
-            </div>
-            <div class="who-card saffron">
-                <div class="who-bg" style="background-image: url('../images/flag.jpeg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Mrs. Anita Rao</div>
-                    <div class="who-title-role">Headmistress</div>
-                    <div class="who-desc">Nurturing young minds.</div>
-                </div>
-            </div>
-            <div class="who-card green">
-                <div class="who-bg" style="background-image: url('../images/bitcblog1.jpg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Mr. Ravi Kumar</div>
-                    <div class="who-title-role">Coordinator</div>
-                    <div class="who-desc">Connecting students and faculty.</div>
-                </div>
-            </div>
-            <div class="who-card purple">
-                <div class="who-bg" style="background-image: url('../images/school.png');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Ms. Sunita Verma</div>
-                    <div class="who-title-role">Counselor</div>
-                    <div class="who-desc">Guiding and supporting students.</div>
-                </div>
-            </div>
-            <div class="who-card teal">
-                <div class="who-bg" style="background-image: url('../images/161024-duke-university-submitted.jpg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Mr. Ajay Singh</div>
-                    <div class="who-title-role">Sports Head</div>
-                    <div class="who-desc">Promoting fitness and teamwork.</div>
-                </div>
-            </div>
-            <!-- Duplicate cards for infinite scroll effect -->
-            <div class="who-card red">
-                <div class="who-bg" style="background-image: url('../images/cm.jpeg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Dr. John Doe</div>
-                    <div class="who-title-role">Principal</div>
-                    <div class="who-desc">Leading with vision and dedication.</div>
-                </div>
-            </div>
-            <div class="who-card blue">
-                <div class="who-bg" style="background-image: url('../images/edu.jpeg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Ms. Priya Sharma</div>
-                    <div class="who-title-role">Vice Principal</div>
-                    <div class="who-desc">Academic excellence and discipline.</div>
-                </div>
-            </div>
-            <div class="who-card saffron">
-                <div class="who-bg" style="background-image: url('../images/flag.jpeg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Mrs. Anita Rao</div>
-                    <div class="who-title-role">Headmistress</div>
-                    <div class="who-desc">Nurturing young minds.</div>
-                </div>
-            </div>
-            <div class="who-card green">
-                <div class="who-bg" style="background-image: url('../images/bitcblog1.jpg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Mr. Ravi Kumar</div>
-                    <div class="who-title-role">Coordinator</div>
-                    <div class="who-desc">Connecting students and faculty.</div>
-                </div>
-            </div>
-            <div class="who-card purple">
-                <div class="who-bg" style="background-image: url('../images/school.png');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Ms. Sunita Verma</div>
-                    <div class="who-title-role">Counselor</div>
-                    <div class="who-desc">Guiding and supporting students.</div>
-                </div>
-            </div>
-            <div class="who-card teal">
-                <div class="who-bg" style="background-image: url('../images/161024-duke-university-submitted.jpg');"></div>
-                <div class="who-darken"></div>
-                <div class="who-card-content">
-                    <div class="who-name">Mr. Ajay Singh</div>
-                    <div class="who-title-role">Sports Head</div>
-                    <div class="who-desc">Promoting fitness and teamwork.</div>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
         <a href="#" class="know-more-btn mt-3">Know More</a>
     </section>
@@ -738,21 +749,22 @@
     <section class="container px-4 py-12 bg-[#F5F5F5] text-center">
         <h2 class="text-3xl font-poppins font-bold text-[#D32F2F] mb-6 animate-slide-in">Our <span style="color: #D32F2F;">Achievements</span></h2>
         <div class="row justify-content-center">
-            <div class="col-md-4 mb-4">
-                <div class="card p-4 bg-white shadow-md hover:shadow-xl transition-shadow duration-300 text-center">
-                    <p class="text-gray-600 flex items-center justify-center"><i class="fas fa-trophy me-2"></i>100% Placement Rate in 2024</p>
+            <?php if (empty($achievements)): ?>
+                <div class="alert alert-info">No achievements found.</div>
+            <?php else: ?>
+                <?php foreach ($achievements as $achievement): ?>
+                <div class="col-md-4 mb-4">
+                    <div class="card p-4 bg-white shadow-md hover:shadow-xl transition-shadow duration-300 text-center">
+                        <p class="text-gray-600 flex items-center justify-center">
+                            <i class="<?= htmlspecialchars($achievement['icon']) ?> me-2"></i><?= htmlspecialchars($achievement['title']) ?>
+                        </p>
+                        <?php if (!empty($achievement['description'])): ?>
+                            <div class="text-muted small mt-2"><?= htmlspecialchars($achievement['description']) ?></div>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card p-4 bg-white shadow-md hover:shadow-xl transition-shadow duration-300 text-center">
-                    <p class="text-gray-600 flex items-center justify-center"><i class="fas fa-award me-2"></i>Awarded <span style="color: #D32F2F;">Best College</span> 2023</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card p-4 bg-white shadow-md hover:shadow-xl transition-shadow duration-300 text-center">
-                    <p class="text-gray-600 flex items-center justify-center"><i class="fas fa-users me-2"></i>Over 5000 <span style="color: #D32F2F;">Alumni</span> Worldwide</p>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </section>
 

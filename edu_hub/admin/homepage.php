@@ -45,6 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'About image updated successfully!';
             }
         }
+
+        if (isset($_POST['update_school_info'])) {
+            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content), updated_at = NOW()");
+            $stmt->execute(['school_info', $_POST['school_name'], $_POST['school_tagline']]);
+            $message = 'School name and tagline updated successfully!';
+        }
     } catch (Exception $e) {
         $error = 'Error: ' . $e->getMessage();
     }
@@ -55,6 +61,7 @@ $hero_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'her
 $about_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'about' AND title != 'About Image' LIMIT 1")->fetch();
 $hero_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'hero' AND title = 'Hero Image' LIMIT 1")->fetchColumn();
 $about_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'about' AND title = 'About Image' LIMIT 1")->fetchColumn();
+$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
 ?>
 
 <!DOCTYPE html>
@@ -190,6 +197,30 @@ $about_image = $pdo->query("SELECT image_path FROM homepage_content WHERE sectio
                             <small class="text-muted">Upload new about section image</small>
                         </div>
                     </div>
+                </form>
+            </div>
+
+            <!-- School Info Section -->
+            <div class="content-section">
+                <h4><i class="fas fa-school text-primary me-2"></i>School Information</h4>
+                <form method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">School Name</label>
+                                <input type="text" name="school_name" class="form-control" value="<?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?>" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">School Tagline</label>
+                                <input type="text" name="school_tagline" class="form-control" value="<?= htmlspecialchars($school_info['content'] ?? 'Excellence in Education') ?>" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" name="update_school_info" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update School Info
+                    </button>
                 </form>
             </div>
         </div>

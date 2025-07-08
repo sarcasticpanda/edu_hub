@@ -2,19 +2,21 @@
 require_once 'includes/auth.php';
 require_once 'includes/db.php';
 
-$message = '';
-$error = '';
+if (session_status() === PHP_SESSION_NONE) session_start();
+$message = $_SESSION['message'] ?? '';
+$error = $_SESSION['error'] ?? '';
+unset($_SESSION['message'], $_SESSION['error']);
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['update_config'])) {
             // Update text configurations
-            updateSchoolConfig('school_name', $_POST['school_name']);
-            updateSchoolConfig('school_tagline', $_POST['school_tagline']);
             updateSchoolConfig('school_address', $_POST['school_address']);
             updateSchoolConfig('school_phone', $_POST['school_phone']);
             updateSchoolConfig('school_email', $_POST['school_email']);
+            updateSchoolConfig('office_hours', $_POST['office_hours']);
+            updateSchoolConfig('google_maps', $_POST['google_maps']);
             
             $message = 'School configuration updated successfully!';
         }
@@ -22,15 +24,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle logo upload
         if (isset($_FILES['school_logo']) && $_FILES['school_logo']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['school_logo'];
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = 'logo_' . time() . '.' . $ext;
-            $target = '../check/images/' . $filename;
-            
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                updateSchoolConfig('school_logo', $target);
-                $message = 'School logo updated successfully!';
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $allowed = ['png', 'jpg', 'jpeg', 'gif'];
+            if (!in_array($ext, $allowed)) {
+                $error = 'Invalid file type. Only PNG, JPG, JPEG, and GIF are allowed.';
+            } elseif ($file['size'] > 2 * 1024 * 1024) {
+                $error = 'File is too large. Maximum size is 2MB.';
             } else {
-                $error = 'Failed to upload logo!';
+                $filename = 'logo_' . time() . '.' . $ext;
+                $target = '../check/images/' . $filename;
+                if (move_uploaded_file($file['tmp_name'], $target)) {
+                    updateSchoolConfig('school_logo', $filename);
+                    $_SESSION['message'] = 'School logo updated successfully!';
+                    header("Location: " . $_SERVER['REQUEST_URI']);
+                    exit;
+                } else {
+                    $_SESSION['error'] = 'Failed to upload logo! Please check folder permissions.';
+                    header("Location: " . $_SERVER['REQUEST_URI']);
+                    exit;
+                }
             }
         }
 
@@ -69,14 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get current configuration
-$school_name = getSchoolConfig('school_name', 'Your School Name');
-$school_tagline = getSchoolConfig('school_tagline', 'Excellence in Education');
 $school_address = getSchoolConfig('school_address', 'Your School Address');
 $school_phone = getSchoolConfig('school_phone', '+91 12345 67890');
 $school_email = getSchoolConfig('school_email', 'info@school.edu');
 $school_logo = getSchoolConfig('school_logo');
 $hero_background = getSchoolConfig('hero_background');
 $about_image = getSchoolConfig('about_image');
+$office_hours = getSchoolConfig('office_hours', 'Monday - Friday: 9:00 AM - 5:00 PM\nSaturday: 9:00 AM - 1:00 PM\nSunday: Closed');
+$google_maps = getSchoolConfig('google_maps', '');
 ?>
 
 <!DOCTYPE html>
@@ -168,16 +180,6 @@ $about_image = getSchoolConfig('about_image');
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">School Name</label>
-                                <input type="text" name="school_name" class="form-control" 
-                                       value="<?= htmlspecialchars($school_name) ?>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">School Tagline</label>
-                                <input type="text" name="school_tagline" class="form-control" 
-                                       value="<?= htmlspecialchars($school_tagline) ?>" required>
-                            </div>
-                            <div class="mb-3">
                                 <label class="form-label">School Address</label>
                                 <textarea name="school_address" class="form-control" rows="3" required><?= htmlspecialchars($school_address) ?></textarea>
                             </div>
@@ -195,6 +197,15 @@ $about_image = getSchoolConfig('about_image');
                             </div>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Office Hours</label>
+                        <textarea name="office_hours" class="form-control" rows="3" required><?= htmlspecialchars($office_hours) ?></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Google Maps Embed Code</label>
+                        <textarea name="google_maps" class="form-control" rows="3" placeholder="Paste Google Maps embed iframe code here"><?= htmlspecialchars($google_maps) ?></textarea>
+                        <small class="text-muted">Go to Google Maps, search for your location, click Share > Embed a map, and paste the iframe code here.</small>
+                    </div>
                     <button type="submit" name="update_config" class="btn btn-success">
                         <i class="fas fa-save me-2"></i>Update Basic Information
                     </button>
@@ -210,7 +221,9 @@ $about_image = getSchoolConfig('about_image');
                     <div class="col-md-4">
                         <h6>School Logo</h6>
                         <?php if ($school_logo): ?>
-                            <img src="<?= htmlspecialchars($school_logo) ?>" class="logo-preview d-block" alt="Current Logo">
+                            <img src="../check/images/<?= htmlspecialchars($school_logo) ?>" class="logo-preview d-block" alt="Current Logo">
+                        <?php else: ?>
+                            <img src="../check/images/school.png" class="logo-preview d-block" alt="Default Logo">
                         <?php endif; ?>
                         <form method="post" enctype="multipart/form-data" class="mt-2">
                             <input type="file" name="school_logo" class="form-control mb-2" accept="image/*">

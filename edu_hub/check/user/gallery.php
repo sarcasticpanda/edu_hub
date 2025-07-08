@@ -1,4 +1,26 @@
 <?php include 'navbar.php'; ?>
+<?php
+// Connect to the same DB as admin
+$host = 'localhost';
+$db   = 'school_management_system';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    die('Database connection failed: ' . $e->getMessage());
+}
+$images = $pdo->query("SELECT * FROM gallery_images ORDER BY created_at DESC")->fetchAll();
+// Fetch school info from homepage_content
+$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,8 +104,12 @@
     </style>
 </head>
 <body>
+    <?php include 'navbar.php'; ?>
+    <main style="margin-top: 56px;">
     <div class="gallery-header">
-        <h1>HELLO! WELCOME TO SUNZINE PHOTO GALLERY</h1>
+        <h1 style="font-family: 'Poppins', 'Luckiest Guy', cursive, sans-serif; font-size: 2.8rem; font-weight: 900; letter-spacing: 2px; background: linear-gradient(90deg, #D32F2F 30%, #F5A623 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; text-shadow: 0 4px 24px #0002, 0 1px 0 #fff;">
+            HELLO! WELCOME TO <span style="color: #1E2A44; text-shadow: 0 2px 8px #fff3; font-size: 1.1em;"><?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?></span> PHOTO GALLERY
+        </h1>
         <p>WITH CREATIVE &amp; UNIQUE STYLE</p>
     </div>
     <div class="gallery-filters">
@@ -95,40 +121,26 @@
         <button class="btn btn-outline-dark filter-btn" data-filter="lifestyle">Life Style</button>
     </div>
     <div class="gallery-grid">
-        <div class="gallery-item" data-category="photography travel">
-            <img src="../images/bitcblog1.jpg" alt="Travel 1">
-            <div class="overlay">Travel &amp; Photography</div>
-        </div>
-        <div class="gallery-item" data-category="photography nature">
-            <img src="../images/161024-duke-university-submitted.jpg" alt="Nature 1">
-            <div class="overlay">Nature &amp; Photography</div>
-        </div>
-        <div class="gallery-item" data-category="fashion lifestyle">
-            <img src="../images/berry-college-historic-campus-at-twilight-royalty-free-image-1652127954.avif" alt="Fashion 1">
-            <div class="overlay">Fashion &amp; Life Style</div>
-        </div>
-        <div class="gallery-item" data-category="fashion">
-            <img src="../images/edu.jpeg" alt="Fashion 2">
-            <div class="overlay">Fashion</div>
-        </div>
-        <div class="gallery-item" data-category="lifestyle">
-            <img src="../images/cm.jpeg" alt="Life Style 1">
-            <div class="overlay">Life Style</div>
-        </div>
-        <div class="gallery-item" data-category="travel">
-            <img src="../images/flag.jpeg" alt="Travel 2">
-            <div class="overlay">Travel</div>
-        </div>
-        <div class="gallery-item" data-category="nature">
-            <img src="../images/school.png" alt="Nature 2">
-            <div class="overlay">Nature</div>
-        </div>
+        <?php if (empty($images)): ?>
+            <div class="alert alert-info col-12">No images found. Please check back later!</div>
+        <?php else: ?>
+            <?php foreach ($images as $image): ?>
+                <div class="gallery-item" data-category="<?= htmlspecialchars($image['category']) ?>">
+                    <img src="<?= htmlspecialchars($image['image_path']) ?>" alt="<?= htmlspecialchars($image['title']) ?>">
+                    <div class="overlay">
+                        <?= htmlspecialchars($image['title']) ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
     <!-- Lightbox Modal -->
     <div id="lightboxModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(30,42,68,0.85); align-items:center; justify-content:center;">
         <span id="lightboxClose" style="position:absolute; top:30px; right:40px; font-size:2.5rem; color:#fff; cursor:pointer; z-index:10001;">&times;</span>
         <img id="lightboxImg" src="" alt="Large Preview" style="max-width:90vw; max-height:80vh; border-radius:32px; box-shadow:0 4px 32px #000a; display:block; margin:auto; transform: scale(0.85) rotate(-3deg); opacity:0; transition: all 0.35s cubic-bezier(.4,2,.6,1);">
     </div>
+    <?php include 'footer.php'; ?>
+    </main>
     <script>
         const filterBtns = document.querySelectorAll('.filter-btn');
         const galleryItems = document.querySelectorAll('.gallery-item');
@@ -178,10 +190,6 @@
             }
         });
     </script>
-<?php include 'footer.php'; ?>
-</body>
-</html>
-
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>

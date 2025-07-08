@@ -13,6 +13,9 @@ try {
     $stats = ['notices' => 0, 'gallery_images' => 0, 'who_members' => 0, 'achievements' => 0];
 }
 
+// Fetch school info from homepage_content
+$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
+
 $school_name = getSchoolConfig('school_name', 'School Management System');
 ?>
 <!DOCTYPE html>
@@ -86,10 +89,17 @@ $school_name = getSchoolConfig('school_name', 'School Management System');
     </style>
 </head>
 <body>
+    <div class="container mt-4">
+        <a href="../check/user/index.php" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left me-1"></i>Back to User Portal</a>
+    </div>
     <div class="admin-container">
         <div class="admin-header">
-            <h1><i class="fas fa-graduation-cap me-3"></i><?= htmlspecialchars($school_name) ?> - Admin Portal</h1>
-            <p class="mb-0">Manage your website content with ease</p>
+            <h1 class="display-4 mb-2 fw-bold">
+                <?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?>
+            </h1>
+            <p class="lead mb-4">
+                <?= htmlspecialchars($school_info['content'] ?? 'Excellence in Education') ?>
+            </p>
         </div>
 
         <div class="admin-nav">
