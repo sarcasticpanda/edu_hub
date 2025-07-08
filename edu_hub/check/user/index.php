@@ -528,10 +528,17 @@ function render_hero_title($title) {
                             <?php foreach ($notices as $notice): ?>
                             <div class="col-md-6">
                                 <div class="card p-3 bg-white shadow-sm text-left h-100 notice-card" data-bs-toggle="modal" data-bs-target="#noticeModal<?= $notice['id'] ?>">
-                                    <h5 class="notice-title mb-1"> <?= htmlspecialchars($notice['title']) ?> </h5>
+                                    <h5 class="notice-title mb-2"><?= htmlspecialchars($notice['title']) ?></h5>
                                     <?php if (!empty($notice['subheading'])): ?>
-                                        <div class="notice-subheading text-muted mb-1" style="font-size: 1rem;"> <?= htmlspecialchars($notice['subheading']) ?> </div>
+                                        <div class="notice-subheading mb-2" style="font-size: 1rem; color: #00539C; font-weight: 600;"><?= htmlspecialchars($notice['subheading']) ?></div>
                                     <?php endif; ?>
+                                    <div class="notice-preview text-muted" style="font-size: 0.9rem;">
+                                        <?= strlen($notice['content']) > 100 ? substr(htmlspecialchars($notice['content']), 0, 100) . '...' : htmlspecialchars($notice['content']) ?>
+                                    </div>
+                                    <div class="notice-meta mt-2" style="font-size: 0.8rem; color: #6c757d;">
+                                        <i class="fas fa-user me-1"></i><?= htmlspecialchars($notice['posted_by']) ?>
+                                        <span class="ms-2"><i class="fas fa-calendar me-1"></i><?= date('M d, Y', strtotime($notice['created_at'])) ?></span>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Modal for full notice -->
@@ -560,6 +567,8 @@ function render_hero_title($title) {
                                           <a href="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" target="_blank" class="btn btn-danger btn-sm mt-1"><i class="fas fa-file-pdf me-1"></i>View PDF</a>
                                         <?php elseif ($notice['attachment_type'] === 'image'): ?>
                                           <img src="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" alt="Notice Attachment" style="max-width: 100%; max-height: 320px; border-radius: 8px; margin-top: 6px;">
+                                        <?php elseif ($notice['attachment_type'] === 'document'): ?>
+                                          <a href="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" target="_blank" class="btn btn-primary btn-sm mt-1"><i class="fas fa-file-word me-1"></i>Download Document</a>
                                         <?php endif; ?>
                                       </div>
                                     <?php endif; ?>
