@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (move_uploaded_file($file['tmp_name'], $target)) {
                         $attachment_path = $filename;
                         $attachment_type = ($ext === 'pdf') ? 'pdf' : (in_array($ext, ['doc', 'docx']) ? 'document' : 'image');
+                        $message = 'Notice added successfully with attachment!';
                     } else {
                         $error = 'Failed to upload attachment. Please check folder permissions.';
                     }
@@ -49,7 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $attachment_path,
                     $attachment_type
                 ]);
-                $message = 'Notice added successfully!';
+                if (empty($message)) {
+                    $message = 'Notice added successfully!';
+                }
             }
         }
         
