@@ -2,7 +2,7 @@
 // Navbar for inclusion in all pages
 // Use the same DB connection as admin/includes/db.php
 $host = 'localhost';
-$db   = 'school_management_system';
+$db   = 'school_cms_system';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -216,7 +216,7 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="gallery.php"><i class="fas fa-images me-2"></i>Gallery</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="contact.php"><i class="fas fa-envelope me-2"></i>Contact Us</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="user_portal/register_form.php"><i class="fas fa-user-plus me-2"></i>Registration</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="../../admin/index.php"><i class="fas fa-user-shield me-2"></i>Login as Admin</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="../../admin/login.php"><i class="fas fa-user-shield me-2"></i>Continue as Admin</a></li>
                 </ul>
                 <div class="d-flex align-items-center ms-3">
                     <img src="../images/flag.jpeg" alt="Telangana Flag" class="circle-logo">

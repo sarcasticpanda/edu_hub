@@ -7,23 +7,20 @@ $stats = [];
 try {
     $stats['notices'] = $pdo->query("SELECT COUNT(*) FROM notices WHERE is_active = 1")->fetchColumn();
     $stats['gallery_images'] = $pdo->query("SELECT COUNT(*) FROM gallery_images WHERE is_active = 1")->fetchColumn();
-    $stats['who_members'] = $pdo->query("SELECT COUNT(*) FROM who_is_who WHERE is_active = 1")->fetchColumn();
+    $stats['leadership'] = $pdo->query("SELECT COUNT(*) FROM leadership WHERE is_active = 1")->fetchColumn();
     $stats['achievements'] = $pdo->query("SELECT COUNT(*) FROM achievements")->fetchColumn();
 } catch (Exception $e) {
-    $stats = ['notices' => 0, 'gallery_images' => 0, 'who_members' => 0, 'achievements' => 0];
+    $stats = ['notices' => 0, 'gallery_images' => 0, 'leadership' => 0, 'achievements' => 0];
 }
 
-// Fetch school info from homepage_content
-$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
-
-$school_name = getSchoolConfig('school_name', 'School Management System');
+$school_name = getSchoolConfig('school_name', 'School CMS');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal - <?= htmlspecialchars($school_name) ?></title>
+    <title>Admin Dashboard - <?= htmlspecialchars($school_name) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -80,25 +77,19 @@ $school_name = getSchoolConfig('school_name', 'School Management System');
             margin: 0.5rem;
             text-align: center;
         }
-        .quick-actions {
-            background: #f8f9fa;
-            padding: 2rem;
-            margin: 1rem;
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="container mt-4">
-        <a href="../check/user/index.php" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left me-1"></i>Back to User Portal</a>
+        <a href="../check/user/index.php" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left me-1"></i>Back to Website</a>
     </div>
     <div class="admin-container">
         <div class="admin-header">
             <h1 class="display-4 mb-2 fw-bold">
-                <?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?>
+                <?= htmlspecialchars($school_name) ?> - Admin Dashboard
             </h1>
             <p class="lead mb-4">
-                <?= htmlspecialchars($school_info['content'] ?? 'Excellence in Education') ?>
+                Content Management System
             </p>
         </div>
 
@@ -134,8 +125,8 @@ $school_name = getSchoolConfig('school_name', 'School Management System');
                 <div class="col-md-3">
                     <div class="stats-card">
                         <i class="fas fa-users"></i>
-                        <h3><?= $stats['who_members'] ?></h3>
-                        <p>Team Members</p>
+                        <h3><?= $stats['leadership'] ?></h3>
+                        <p>Leadership Team</p>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -150,112 +141,76 @@ $school_name = getSchoolConfig('school_name', 'School Management System');
             <!-- Navigation Cards -->
             <div class="row">
                 <div class="col-md-4">
-                    <a href="school_config.php" class="nav-card">
+                    <a href="school_branding.php" class="nav-card">
                         <div class="text-center">
-                            <i class="fas fa-cog text-success"></i>
-                            <h5>School Configuration</h5>
-                            <p class="text-muted">Configure school name, logo, and basic settings</p>
+                            <i class="fas fa-school text-primary"></i>
+                            <h5>School Branding</h5>
+                            <p class="text-muted">Manage school logo, name, and footer content</p>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="homepage.php" class="nav-card">
+                    <a href="homepage_manager.php" class="nav-card">
                         <div class="text-center">
-                            <i class="fas fa-home text-primary"></i>
-                            <h5>Homepage Content</h5>
-                            <p class="text-muted">Edit hero section, about content, and main page elements</p>
+                            <i class="fas fa-home text-success"></i>
+                            <h5>Homepage Manager</h5>
+                            <p class="text-muted">Edit hero section, about content, and main page</p>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="notices.php" class="nav-card">
+                    <a href="notice_manager.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-bell text-warning"></i>
                             <h5>Notice Board</h5>
-                            <p class="text-muted">Manage announcements and important notices</p>
+                            <p class="text-muted">Manage notices with PDF and image uploads</p>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="gallery.php" class="nav-card">
+                    <a href="leadership_manager.php" class="nav-card">
                         <div class="text-center">
-                            <i class="fas fa-images text-success"></i>
-                            <h5>Gallery Management</h5>
+                            <i class="fas fa-users text-info"></i>
+                            <h5>Leadership Manager</h5>
+                            <p class="text-muted">Manage who is who section with images</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="gallery_manager.php" class="nav-card">
+                        <div class="text-center">
+                            <i class="fas fa-images text-purple"></i>
+                            <h5>Gallery Manager</h5>
                             <p class="text-muted">Upload and organize gallery images</p>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="about.php" class="nav-card">
+                    <a href="about_manager.php" class="nav-card">
                         <div class="text-center">
-                            <i class="fas fa-info-circle text-info"></i>
-                            <h5>About Page</h5>
-                            <p class="text-muted">Update about us content and information</p>
+                            <i class="fas fa-info-circle text-secondary"></i>
+                            <h5>About Page Manager</h5>
+                            <p class="text-muted">Edit about page content and values</p>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="whoiswho.php" class="nav-card">
-                        <div class="text-center">
-                            <i class="fas fa-users text-purple"></i>
-                            <h5>Who is Who</h5>
-                            <p class="text-muted">Manage staff and faculty information</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="footer.php" class="nav-card">
-                        <div class="text-center">
-                            <i class="fas fa-grip-horizontal text-secondary"></i>
-                            <h5>Footer Content</h5>
-                            <p class="text-muted">Edit footer links and information</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="achievements.php" class="nav-card">
+                    <a href="achievement_manager.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-trophy text-warning"></i>
-                            <h5>Achievements</h5>
+                            <h5>Achievement Manager</h5>
                             <p class="text-muted">Manage school achievements and awards</p>
                         </div>
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="contact.php" class="nav-card">
+                    <a href="contact_manager.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-envelope text-danger"></i>
-                            <h5>Contact Information</h5>
-                            <p class="text-muted">Update contact details and address</p>
+                            <h5>Contact Manager</h5>
+                            <p class="text-muted">Update contact page information</p>
                         </div>
                     </a>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h5 class="mb-3">Quick Actions</h5>
-                <div class="row">
-                    <div class="col-md-3">
-                        <a href="notices.php?action=add" class="btn btn-primary w-100 mb-2">
-                            <i class="fas fa-plus me-2"></i>Add New Notice
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="gallery.php?action=upload" class="btn btn-success w-100 mb-2">
-                            <i class="fas fa-upload me-2"></i>Upload Gallery Images
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="whoiswho.php?action=add" class="btn btn-info w-100 mb-2">
-                            <i class="fas fa-user-plus me-2"></i>Add Team Member
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="../check/user/index.php" target="_blank" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-external-link-alt me-2"></i>View Website
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>

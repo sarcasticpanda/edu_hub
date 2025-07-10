@@ -1,8 +1,8 @@
 <?php
 $host = 'localhost';
-$db   = 'school_management_system';
-$user = 'root'; // Change if your MySQL username is different
-$pass = '';     // Change if your MySQL password is different
+$db   = 'school_cms_system';
+$user = 'root';
+$pass = '';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -41,4 +41,23 @@ function updateSchoolConfig($key, $value) {
         return false;
     }
 }
+
+// Helper function to create upload directories
+function createUploadDirectories() {
+    $directories = [
+        '../check/images/',
+        '../check/notice_attachments/',
+        '../check/gallery/',
+        '../check/leadership/'
+    ];
+    
+    foreach ($directories as $dir) {
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+    }
+}
+
+// Create directories on include
+createUploadDirectories();
 ?>
