@@ -2,7 +2,7 @@
 <?php
 // Connect to the same DB as admin
 $host = 'localhost';
-$db   = 'school_management_system';
+$db   = 'school_cms_system';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -17,19 +17,24 @@ try {
 } catch (PDOException $e) {
     die('Database connection failed: ' . $e->getMessage());
 }
-$hero_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'hero' AND title != 'Hero Image' LIMIT 1")->fetch();
-$hero_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'hero' AND title = 'Hero Image' LIMIT 1")->fetchColumn();
+
+// Get homepage content from database
+$hero_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'hero' AND title != 'Hero Background' LIMIT 1")->fetch();
+$hero_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'hero' AND title = 'Hero Background' LIMIT 1")->fetchColumn();
 $about_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'about' AND title != 'About Image' LIMIT 1")->fetch();
 $about_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'about' AND title = 'About Image' LIMIT 1")->fetchColumn();
+
 // Fetch dynamic content for homepage sections
 $notices = $pdo->query("SELECT * FROM notices WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6")->fetchAll();
-$who_members = $pdo->query("SELECT * FROM who_is_who WHERE is_active = 1 ORDER BY display_order ASC, created_at DESC LIMIT 12")->fetchAll();
+$who_members = $pdo->query("SELECT * FROM leadership WHERE is_active = 1 ORDER BY display_order ASC, created_at DESC LIMIT 12")->fetchAll();
 $achievements = $pdo->query("SELECT * FROM achievements ORDER BY created_at DESC LIMIT 6")->fetchAll();
+
 // Fetch school config for branding and images
 $school_config = [];
 foreach ($pdo->query("SELECT config_key, config_value FROM school_config") as $row) {
     $school_config[$row['config_key']] = $row['config_value'];
 }
+
 // Fetch school info from homepage_content
 $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
 
@@ -479,10 +484,10 @@ function render_hero_title($title) {
 </head>
 <body class="font-open-sans text-gray-800 bg-gray-50 min-h-screen flex flex-col">
     <!-- Extended Hero Section with Photo -->
-    <header class="bg-cover bg-center min-h-[600px] flex items-center mt-0 relative w-full" style="background-image: linear-gradient(to right, rgba(30, 42, 68, 0.7), rgba(31, 47, 77, 0.7)), url('<?= $hero_image ? htmlspecialchars($hero_image) : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' ?>'); padding-top: 0;">
+    <header class="bg-cover bg-center min-h-[600px] flex items-center mt-0 relative w-full" style="background-image: linear-gradient(to right, rgba(30, 42, 68, 0.7), rgba(31, 47, 77, 0.7)), url('<?= $hero_image ? htmlspecialchars($hero_image) : '../images/bitcblog1.jpg' ?>'); padding-top: 0;">
         <div class="container px-4 text-center animate-fade-in">
             <h1 class="text-5xl md:text-6xl font-poppins font-extrabold mb-4 drop-shadow-lg">
-                <?= render_hero_title($hero_content['title'] ?? 'Your School Name') ?>
+                <?= render_hero_title($hero_content['title'] ?? 'WELCOME TO CITY MONTESSORI SCHOOL') ?>
             </h1>
             <p class="text-xl md:text-2xl font-open-sans text-white mb-6 drop-shadow-md">
                 <?= htmlspecialchars($hero_content['content'] ?? 'Where Excellence Meets Opportunity') ?>
@@ -496,20 +501,20 @@ function render_hero_title($title) {
     <section class="container px-4 py-12 bg-white text-center">
         <div class="row align-items-center justify-content-center py-4 about-main-card" style="min-height: 420px;">
             <div class="col-md-6 mb-4 mb-md-0">
-                <?php if (!empty($school_config['about_image'])): ?>
-                    <img src="<?= htmlspecialchars($school_config['about_image']) ?>" alt="About Image" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
-                <?php elseif ($about_image): ?>
+                <?php if ($about_image): ?>
                     <img src="<?= htmlspecialchars($about_image) ?>" alt="About Image" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                <?php elseif (!empty($school_config['about_image'])): ?>
+                    <img src="<?= htmlspecialchars($school_config['about_image']) ?>" alt="About Image" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
                 <?php else: ?>
                     <img src="../images/bitcblog1.jpg" alt="College Campus" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
                 <?php endif; ?>
             </div>
             <div class="col-md-6 text-left">
                 <h2 class="text-4xl font-poppins font-bold mb-4 animate-slide-in">
-                    <span style="color: #D32F2F;">About</span> <span class="text-[#1E2A44]"><?= htmlspecialchars($about_content['title'] ?? 'Your School Name') ?></span>
+                    <span style="color: #D32F2F;">About</span> <span class="text-[#1E2A44]"><?= htmlspecialchars($about_content['title'] ?? 'City Montessori School') ?></span>
                 </h2>
                 <p class="about-bold-text text-gray-700 leading-relaxed mb-2">
-                    <?= nl2br(htmlspecialchars($about_content['content'] ?? "St. Xavier's College is a premier institution dedicated to fostering academic <span style='color: #D32F2F;'>excellence</span>, innovation, and personal growth. With a rich history and a vibrant community, we offer diverse programs and opportunities for students to thrive in a supportive environment.")) ?>
+                    <?= nl2br(htmlspecialchars($about_content['content'] ?? "Empowering Excellence, Fostering Growth. City Montessori School provides your academic journey with the environment, resources, and inspiration needed to achieve your highest potential.")) ?>
                 </p>
             </div>
         </div>
