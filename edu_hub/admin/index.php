@@ -150,7 +150,7 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="homepage_manager.php" class="nav-card">
+                    <a href="homepage.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-home text-success"></i>
                             <h5>Homepage Manager</h5>
@@ -159,7 +159,7 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="notice_manager.php" class="nav-card">
+                    <a href="notices.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-bell text-warning"></i>
                             <h5>Notice Board</h5>
@@ -168,7 +168,7 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="leadership_manager.php" class="nav-card">
+                    <a href="whoiswho.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-users text-info"></i>
                             <h5>Leadership Manager</h5>
@@ -177,7 +177,7 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="gallery_manager.php" class="nav-card">
+                    <a href="gallery.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-images text-purple"></i>
                             <h5>Gallery Manager</h5>
@@ -186,7 +186,7 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="about_manager.php" class="nav-card">
+                    <a href="about.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-info-circle text-secondary"></i>
                             <h5>About Page Manager</h5>

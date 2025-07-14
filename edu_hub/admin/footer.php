@@ -9,18 +9,25 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['update_footer'])) {
+            foreach ($_POST['footer_sections'] as $section => $content) {
             $stmt = $pdo->prepare("INSERT INTO footer_content (section, content, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()");
-            
-            // Update each section
-            $stmt->execute(['contact_email', $_POST['contact_email']]);
-            $stmt->execute(['contact_phone', $_POST['contact_phone']]);
-            $stmt->execute(['contact_address', $_POST['contact_address']]);
-            $stmt->execute(['facebook_link', $_POST['facebook_link']]);
-            $stmt->execute(['twitter_link', $_POST['twitter_link']]);
-            $stmt->execute(['linkedin_link', $_POST['linkedin_link']]);
-            $stmt->execute(['copyright_text', $_POST['copyright_text']]);
-            
+                $stmt->execute([$section, $content]);
+            }
             $message = 'Footer content updated successfully!';
+        }
+        if (isset($_POST['add_section'])) {
+            $new_section = trim($_POST['new_section']);
+            if ($new_section !== '') {
+                $stmt = $pdo->prepare("INSERT IGNORE INTO footer_content (section, content, updated_at) VALUES (?, '', NOW())");
+                $stmt->execute([$new_section]);
+                $message = 'New section added!';
+            }
+        }
+        if (isset($_POST['delete_section'])) {
+            $section_to_delete = $_POST['delete_section'];
+            $stmt = $pdo->prepare("DELETE FROM footer_content WHERE section = ?");
+            $stmt->execute([$section_to_delete]);
+            $message = 'Section deleted!';
         }
     } catch (Exception $e) {
         $error = 'Error: ' . $e->getMessage();
@@ -105,49 +112,22 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
             <?php endif; ?>
 
             <div class="content-section">
-                <h4><i class="fas fa-edit text-primary me-2"></i>Footer Information</h4>
+                <h4><i class="fas fa-edit text-primary me-2"></i>Footer Sections</h4>
+                <form method="post" class="mb-4 d-flex align-items-center gap-2">
+                    <input type="text" name="new_section" class="form-control" placeholder="New Section Name (e.g. instagram_link)" required style="max-width:300px;">
+                    <button type="submit" name="add_section" class="btn btn-success"><i class="fas fa-plus me-1"></i>Add Section</button>
+                </form>
                 <form method="post">
                     <div class="row">
-                        <div class="col-md-6">
-                            <h5 class="mb-3">Contact Information</h5>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="fas fa-envelope me-2"></i>Email Address</label>
-                                <input type="email" name="contact_email" class="form-control" 
-                                       value="<?= htmlspecialchars($footer_data['contact_email'] ?? 'info@stxaviercollege.in') ?>" required>
+                        <?php foreach ($footer_data as $section => $content): ?>
+                            <div class="col-md-6 mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text" style="min-width:140px;"> <?= htmlspecialchars($section) ?> </span>
+                                    <input type="text" name="footer_sections[<?= htmlspecialchars($section) ?>]" class="form-control" value="<?= htmlspecialchars($content) ?>">
+                                    <button type="submit" name="delete_section" value="<?= htmlspecialchars($section) ?>" class="btn btn-danger" onclick="return confirm('Delete this section?')"><i class="fas fa-trash"></i></button>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="fas fa-phone me-2"></i>Phone Number</label>
-                                <input type="text" name="contact_phone" class="form-control" 
-                                       value="<?= htmlspecialchars($footer_data['contact_phone'] ?? '+91 12345 67890') ?>" required>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="fas fa-map-marker-alt me-2"></i>Address</label>
-                                <textarea name="contact_address" class="form-control" rows="3" required><?= htmlspecialchars($footer_data['contact_address'] ?? 'Hyderabad, Telangana, India') ?></textarea>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h5 class="mb-3">Social Media Links</h5>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="fab fa-facebook me-2"></i>Facebook URL</label>
-                                <input type="url" name="facebook_link" class="form-control" 
-                                       value="<?= htmlspecialchars($footer_data['facebook_link'] ?? '#') ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="fab fa-twitter me-2"></i>Twitter URL</label>
-                                <input type="url" name="twitter_link" class="form-control" 
-                                       value="<?= htmlspecialchars($footer_data['twitter_link'] ?? '#') ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="fab fa-linkedin me-2"></i>LinkedIn URL</label>
-                                <input type="url" name="linkedin_link" class="form-control" 
-                                       value="<?= htmlspecialchars($footer_data['linkedin_link'] ?? '#') ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label"><i class="fas fa-copyright me-2"></i>Copyright Text</label>
-                                <input type="text" name="copyright_text" class="form-control" 
-                                       value="<?= htmlspecialchars($footer_data['copyright_text'] ?? '© 2025 St. Xavier\'s College. All rights reserved.') ?>" required>
-                            </div>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
                     <div class="text-center mt-4">
                         <button type="submit" name="update_footer" class="btn btn-primary btn-lg">

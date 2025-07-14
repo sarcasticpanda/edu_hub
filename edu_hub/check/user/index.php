@@ -17,19 +17,27 @@ try {
 } catch (PDOException $e) {
     die('Database connection failed: ' . $e->getMessage());
 }
-$hero_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'hero' AND title != 'Hero Image' LIMIT 1")->fetch();
-$hero_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'hero' AND title = 'Hero Image' LIMIT 1")->fetchColumn();
-$about_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'about' AND title != 'About Image' LIMIT 1")->fetch();
-$about_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'about' AND title = 'About Image' LIMIT 1")->fetchColumn();
+
 // Fetch dynamic content for homepage sections
-$notices = $pdo->query("SELECT * FROM notices WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6")->fetchAll();
+$hero_title = $pdo->query("SELECT content FROM homepage_content WHERE section = 'hero' AND title = 'Hero Title' LIMIT 1")->fetchColumn();
+$hero_subtitle = $pdo->query("SELECT content FROM homepage_content WHERE section = 'hero' AND title = 'Hero Subtitle' LIMIT 1")->fetchColumn();
+$hero_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'hero' AND title = 'Hero Image' LIMIT 1")->fetchColumn();
+$about_title = $pdo->query("SELECT content FROM homepage_content WHERE section = 'about' AND title = 'About Title' LIMIT 1")->fetchColumn();
+$about_content = $pdo->query("SELECT content FROM homepage_content WHERE section = 'about' AND title = 'About Content' LIMIT 1")->fetchColumn();
+$about_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'about' AND title = 'About Image' LIMIT 1")->fetchColumn();
+$notices = $pdo->query("SELECT * FROM notices_new WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6")->fetchAll();
 $who_members = $pdo->query("SELECT * FROM who_is_who WHERE is_active = 1 ORDER BY display_order ASC, created_at DESC LIMIT 12")->fetchAll();
 $achievements = $pdo->query("SELECT * FROM achievements ORDER BY created_at DESC LIMIT 6")->fetchAll();
+
+// Fetch gallery images for homepage
+$home_gallery_images = $pdo->query("SELECT image_path FROM gallery_images WHERE display_location IN ('Homepage', 'Both') ORDER BY created_at DESC LIMIT 10")->fetchAll();
+
 // Fetch school config for branding and images
 $school_config = [];
 foreach ($pdo->query("SELECT config_key, config_value FROM school_config") as $row) {
     $school_config[$row['config_key']] = $row['config_value'];
 }
+
 // Fetch school info from homepage_content
 $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
 
@@ -479,13 +487,13 @@ function render_hero_title($title) {
 </head>
 <body class="font-open-sans text-gray-800 bg-gray-50 min-h-screen flex flex-col">
     <!-- Extended Hero Section with Photo -->
-    <header class="bg-cover bg-center min-h-[600px] flex items-center mt-0 relative w-full" style="background-image: linear-gradient(to right, rgba(30, 42, 68, 0.7), rgba(31, 47, 77, 0.7)), url('<?= $hero_image ? htmlspecialchars($hero_image) : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' ?>'); padding-top: 0;">
+    <header class="bg-cover bg-center min-h-[600px] flex items-center mt-0 relative w-full" style="background-image: linear-gradient(to right, rgba(30, 42, 68, 0.7), rgba(31, 47, 77, 0.7)), url('<?= $hero_image ? htmlspecialchars('../images/' . basename($hero_image)) : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' ?>'); padding-top: 0;">
         <div class="container px-4 text-center animate-fade-in">
             <h1 class="text-5xl md:text-6xl font-poppins font-extrabold mb-4 drop-shadow-lg">
-                <?= render_hero_title($hero_content['title'] ?? 'Your School Name') ?>
+                <?= render_hero_title($hero_title ?? 'Your School Name') ?>
             </h1>
             <p class="text-xl md:text-2xl font-open-sans text-white mb-6 drop-shadow-md">
-                <?= htmlspecialchars($hero_content['content'] ?? 'Where Excellence Meets Opportunity') ?>
+                <?= htmlspecialchars($hero_subtitle ?? 'Where Excellence Meets Opportunity') ?>
             </p>
             <a href="about.php" class="btn btn-primary rounded-full px-6 py-3 text-lg bg-[#F5A623] hover:bg-[#D32F2F] text-white transition-transform duration-300 hover:scale-110 animate-pulse-slow">Learn More</a>
         </div>
@@ -497,19 +505,19 @@ function render_hero_title($title) {
         <div class="row align-items-center justify-content-center py-4 about-main-card" style="min-height: 420px;">
             <div class="col-md-6 mb-4 mb-md-0">
                 <?php if (!empty($school_config['about_image'])): ?>
-                    <img src="<?= htmlspecialchars($school_config['about_image']) ?>" alt="About Image" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                    <img src="<?= htmlspecialchars('../images/' . basename($school_config['about_image'])) ?>" alt="About Image" class="img-fluid rounded-lg shadow-lg" style="max-height: 350px; width: 95%; object-fit: cover; opacity: 1; display: block; margin: 0 auto;">
                 <?php elseif ($about_image): ?>
-                    <img src="<?= htmlspecialchars($about_image) ?>" alt="About Image" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                    <img src="<?= htmlspecialchars('../images/' . basename($about_image)) ?>" alt="About Image" class="img-fluid rounded-lg shadow-lg" style="max-height: 350px; width: 95%; object-fit: cover; opacity: 1; display: block; margin: 0 auto;">
                 <?php else: ?>
-                    <img src="../images/bitcblog1.jpg" alt="College Campus" class="rounded-lg shadow-lg w-100 transition-transform duration-300 hover:scale-105" style="max-height: 400px; object-fit: cover; opacity: 1; display: block;">
+                    <img src="../images/bitcblog1.jpg" alt="College Campus" class="img-fluid rounded-lg shadow-lg" style="max-height: 350px; width: 95%; object-fit: cover; opacity: 1; display: block; margin: 0 auto;">
                 <?php endif; ?>
             </div>
             <div class="col-md-6 text-left">
                 <h2 class="text-4xl font-poppins font-bold mb-4 animate-slide-in">
-                    <span style="color: #D32F2F;">About</span> <span class="text-[#1E2A44]"><?= htmlspecialchars($about_content['title'] ?? 'Your School Name') ?></span>
+                    <span style="color: #D32F2F;">About</span> <span class="text-[#1E2A44]"><?= htmlspecialchars($about_title ?? 'Your School Name') ?></span>
                 </h2>
                 <p class="about-bold-text text-gray-700 leading-relaxed mb-2">
-                    <?= nl2br(htmlspecialchars($about_content['content'] ?? "St. Xavier's College is a premier institution dedicated to fostering academic <span style='color: #D32F2F;'>excellence</span>, innovation, and personal growth. With a rich history and a vibrant community, we offer diverse programs and opportunities for students to thrive in a supportive environment.")) ?>
+                    <?= nl2br(htmlspecialchars($about_content ?? "St. Xavier's College is a premier institution dedicated to fostering academic <span style='color: #D32F2F;'>excellence</span>, innovation, and personal growth. With a rich history and a vibrant community, we offer diverse programs and opportunities for students to thrive in a supportive environment.")) ?>
                 </p>
             </div>
         </div>
@@ -553,28 +561,37 @@ function render_hero_title($title) {
                                   </div>
                                   <div class="modal-body">
                                     <?php if (!empty($notice['subheading'])): ?>
-                                      <div class="mb-2" style="color:#00539C; font-family:'Roboto',Arial,sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:1.05rem;">
+                                      <div class="mb-3 text-muted" style="font-family:'Roboto',Arial,sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; font-size:0.95rem; color:#555 !important;">
                                         <?= htmlspecialchars($notice['subheading']) ?>
                                       </div>
                                     <?php endif; ?>
-                                    <div class="mb-2" style="font-size:0.98rem; color:#444;">
-                                      <strong>Uploaded by:</strong> <?= htmlspecialchars($notice['posted_by']) ?>
-                                    </div>
-                                    <?php if (!empty($notice['attachment_path'])): ?>
-                                      <div class="mb-3">
-                                        <strong>Attachment:</strong><br>
-                                        <?php if ($notice['attachment_type'] === 'pdf'): ?>
-                                          <a href="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" target="_blank" class="btn btn-danger btn-sm mt-1"><i class="fas fa-file-pdf me-1"></i>View PDF</a>
-                                        <?php elseif ($notice['attachment_type'] === 'image'): ?>
-                                          <img src="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" alt="Notice Attachment" style="max-width: 100%; max-height: 320px; border-radius: 8px; margin-top: 6px;">
-                                        <?php elseif ($notice['attachment_type'] === 'document'): ?>
-                                          <a href="notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" target="_blank" class="btn btn-primary btn-sm mt-1"><i class="fas fa-file-word me-1"></i>Download Document</a>
-                                        <?php endif; ?>
-                                      </div>
-                                    <?php endif; ?>
-                                    <div class="mb-3" style="font-family:'Segoe UI','Open Sans',Arial,sans-serif; font-size:1.08rem; color:#222;">
+                                    <div class="mb-3" style="font-family:'Segoe UI','Open Sans',Arial,sans-serif; font-size:1.05rem; color:#222; line-height:1.6;">
                                       <?= nl2br(htmlspecialchars($notice['content'])) ?>
                                     </div>
+                                    <hr class="my-4">
+                                    <div class="mb-2" style="font-size:0.9rem; color:#777;">
+                                      <strong>Posted by:</strong> <?= htmlspecialchars($notice['posted_by']) ?> | 
+                                      <strong>Date:</strong> <?= date('M d, Y', strtotime($notice['created_at'])) ?>
+                                    </div>
+                                    <?php if (!empty($notice['attachment_path'])): ?>
+                                      <div class="mt-3 p-3 bg-light border rounded-lg d-inline-block shadow-sm w-100">
+                                        <strong>Attachment:</strong>
+                                        <button class="btn btn-sm btn-outline-info ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#attachmentContent<?= $notice['id'] ?>" aria-expanded="false" aria-controls="attachmentContent<?= $notice['id'] ?>">
+                                            <i class="fas fa-eye me-1"></i> View Attachment
+                                        </button>
+                                        <div class="collapse mt-3" id="attachmentContent<?= $notice['id'] ?>">
+                                            <?php if ($notice['attachment_type'] === 'pdf'): ?>
+                                                <iframe src="../notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" width="100%" height="400px" style="border:none; border-radius:8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></iframe>
+                                                <a href="../notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" target="_blank" class="btn btn-danger btn-sm mt-2"><i class="fas fa-external-link-alt me-1"></i>Open PDF in New Tab</a>
+                                            <?php elseif ($notice['attachment_type'] === 'image'): ?>
+                                                <img src="../notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" alt="Notice Attachment" style="max-width: 100%; max-height: 380px; border-radius: 8px; margin-top: 10px; object-fit: contain; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                            <?php elseif ($notice['attachment_type'] === 'document'): ?>
+                                                <p>Document available for download:</p>
+                                                <a href="../notice_attachments/<?= htmlspecialchars($notice['attachment_path']) ?>" target="_blank" class="btn btn-primary btn-sm mt-2"><i class="fas fa-download me-1"></i>Download Document</a>
+                                            <?php endif; ?>
+                                        </div>
+                                      </div>
+                                    <?php endif; ?>
                                   </div>
                                 </div>
                               </div>
@@ -702,30 +719,20 @@ function render_hero_title($title) {
         <h2 class="gallery-title-funky animate-slide-in">Gallery</h2>
         <div class="gallery-row-wrapper mb-4">
             <div class="gallery-row gallery-row-1 d-flex align-items-center">
-                <img src="../images/bitcblog1.jpg" class="gallery-img" alt="Campus 1">
-                <img src="../images/161024-duke-university-submitted.jpg" class="gallery-img" alt="Campus 2">
-                <img src="../images/berry-college-historic-campus-at-twilight-royalty-free-image-1652127954.avif" class="gallery-img" alt="Campus 3">
-                <img src="../images/school.png" class="gallery-img" alt="School">
-                <img src="../images/edu.jpeg" class="gallery-img" alt="Edu">
-                <img src="../images/bitcblog1.jpg" class="gallery-img" alt="Campus 1">
-                <img src="../images/161024-duke-university-submitted.jpg" class="gallery-img" alt="Campus 2">
-                <img src="../images/berry-college-historic-campus-at-twilight-royalty-free-image-1652127954.avif" class="gallery-img" alt="Campus 3">
-                <img src="../images/school.png" class="gallery-img" alt="School">
-                <img src="../images/edu.jpeg" class="gallery-img" alt="Edu">
+                <?php foreach ($home_gallery_images as $index => $image): ?>
+                    <?php if ($index % 2 == 0): // For alternating rows, take even indices for row 1 ?>
+                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image">
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </div>
         </div>
         <div class="gallery-row-wrapper">
             <div class="gallery-row gallery-row-2 d-flex align-items-center">
-                <img src="../images/cm.jpeg" class="gallery-img" alt="CM">
-                <img src="../images/flag.jpeg" class="gallery-img" alt="Flag">
-                <img src="../images/edu.jpeg" class="gallery-img" alt="Edu 2">
-                <img src="../images/berry-college-historic-campus-at-twilight-royalty-free-image-1652127954.avif" class="gallery-img" alt="Campus 3 Again">
-                <img src="../images/bitcblog1.jpg" class="gallery-img" alt="Campus 1 Again">
-                <img src="../images/cm.jpeg" class="gallery-img" alt="CM">
-                <img src="../images/flag.jpeg" class="gallery-img" alt="Flag">
-                <img src="../images/edu.jpeg" class="gallery-img" alt="Edu 2">
-                <img src="../images/berry-college-historic-campus-at-twilight-royalty-free-image-1652127954.avif" class="gallery-img" alt="Campus 3 Again">
-                <img src="../images/bitcblog1.jpg" class="gallery-img" alt="Campus 1 Again">
+                <?php foreach ($home_gallery_images as $index => $image): ?>
+                    <?php if ($index % 2 != 0): // For alternating rows, take odd indices for row 2 ?>
+                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image">
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </div>
         </div>
         <a href="view_gallery.php" class="explore-btn">Explore More</a>
@@ -740,7 +747,10 @@ function render_hero_title($title) {
             <?php else: ?>
                 <?php foreach ($who_members as $member): ?>
                 <div class="who-card <?= htmlspecialchars($member['color_theme']) ?>">
-                    <div class="who-bg" style="background-image: url('<?= htmlspecialchars($member['image_path']) ?>');"></div>
+                    <?php
+                    $display_image_path = str_replace('../check/images/', '../images/', $member['image_path']);
+                    ?>
+                    <div class="who-bg" style="background-image: url('<?= htmlspecialchars($display_image_path) ?>');"></div>
                     <div class="who-darken"></div>
                     <div class="who-card-content">
                         <div class="who-name"><?= htmlspecialchars($member['name']) ?></div>

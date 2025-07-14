@@ -5,51 +5,55 @@ require_once 'includes/db.php';
 $message = '';
 $error = '';
 
+// Get current school info
+$school_name = getSchoolConfig('school_name', 'Your School Name');
+$school_tagline = getSchoolConfig('school_tagline', 'Excellence in Education');
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['update_hero'])) {
-            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content), updated_at = NOW()");
-            $stmt->execute(['hero', $_POST['hero_title'], $_POST['hero_subtitle']]);
+            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()");
+            $stmt->execute(['hero', 'Hero Title', $_POST['hero_title']]);
+            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()");
+            $stmt->execute(['hero', 'Hero Subtitle', $_POST['hero_subtitle']]);
             $message = 'Hero section updated successfully!';
         }
-        
         if (isset($_POST['update_about'])) {
-            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content), updated_at = NOW()");
-            $stmt->execute(['about', $_POST['about_title'], $_POST['about_content']]);
+            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()");
+            $stmt->execute(['about', 'About Title', $_POST['about_title']]);
+            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()");
+            $stmt->execute(['about', 'About Content', $_POST['about_content']]);
             $message = 'About section updated successfully!';
         }
-
         if (isset($_FILES['hero_image']) && $_FILES['hero_image']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['hero_image'];
             $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
             $filename = 'hero_' . time() . '.' . $ext;
-            $target = '../check/images/' . $filename;
-            
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, image_path, updated_at) VALUES (?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE image_path = VALUES(image_path), updated_at = NOW()");
-                $stmt->execute(['hero', 'Hero Image', '', $target]);
+            $upload_target = $_SERVER['DOCUMENT_ROOT'] . '/seqto_edu_share/edu_hub/edu_hub/check/images/' . $filename;
+            $db_image_path = '../check/images/' . $filename; // Path to store in DB for display
+            if (move_uploaded_file($file['tmp_name'], $upload_target)) {
+                $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, image_path, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE image_path = VALUES(image_path), updated_at = NOW()");
+                $stmt->execute(['hero', 'Hero Image', $db_image_path]);
                 $message = 'Hero image updated successfully!';
             }
         }
-
         if (isset($_FILES['about_image']) && $_FILES['about_image']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['about_image'];
             $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
             $filename = 'about_' . time() . '.' . $ext;
-            $target = '../check/images/' . $filename;
-            
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, image_path, updated_at) VALUES (?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE image_path = VALUES(image_path), updated_at = NOW()");
-                $stmt->execute(['about', 'About Image', '', $target]);
+            $upload_target = $_SERVER['DOCUMENT_ROOT'] . '/seqto_edu_share/edu_hub/edu_hub/check/images/' . $filename;
+            $db_image_path = '../check/images/' . $filename; // Path to store in DB for display
+            if (move_uploaded_file($file['tmp_name'], $upload_target)) {
+                $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, image_path, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE image_path = VALUES(image_path), updated_at = NOW()");
+                $stmt->execute(['about', 'About Image', $db_image_path]);
                 $message = 'About image updated successfully!';
             }
         }
-
         if (isset($_POST['update_school_info'])) {
-            $stmt = $pdo->prepare("INSERT INTO homepage_content (section, title, content, updated_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content), updated_at = NOW()");
-            $stmt->execute(['school_info', $_POST['school_name'], $_POST['school_tagline']]);
-            $message = 'School name and tagline updated successfully!';
+            updateSchoolConfig('school_name', $_POST['school_name']);
+            updateSchoolConfig('school_tagline', $_POST['school_tagline']);
+            $message = 'School information updated successfully!';
         }
     } catch (Exception $e) {
         $error = 'Error: ' . $e->getMessage();
@@ -57,11 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get current content
-$hero_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'hero' AND title != 'Hero Image' LIMIT 1")->fetch();
-$about_content = $pdo->query("SELECT * FROM homepage_content WHERE section = 'about' AND title != 'About Image' LIMIT 1")->fetch();
+$hero_title = $pdo->query("SELECT content FROM homepage_content WHERE section = 'hero' AND title = 'Hero Title' LIMIT 1")->fetchColumn();
+$hero_subtitle = $pdo->query("SELECT content FROM homepage_content WHERE section = 'hero' AND title = 'Hero Subtitle' LIMIT 1")->fetchColumn();
 $hero_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'hero' AND title = 'Hero Image' LIMIT 1")->fetchColumn();
+$about_title = $pdo->query("SELECT content FROM homepage_content WHERE section = 'about' AND title = 'About Title' LIMIT 1")->fetchColumn();
+$about_content = $pdo->query("SELECT content FROM homepage_content WHERE section = 'about' AND title = 'About Content' LIMIT 1")->fetchColumn();
 $about_image = $pdo->query("SELECT image_path FROM homepage_content WHERE section = 'about' AND title = 'About Image' LIMIT 1")->fetchColumn();
-$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
 ?>
 
 <!DOCTYPE html>
@@ -145,13 +150,11 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
                         <div class="col-md-8">
                             <div class="mb-3">
                                 <label class="form-label">Hero Title</label>
-                                <input type="text" name="hero_title" class="form-control" 
-                                       value="<?= htmlspecialchars($hero_content['title'] ?? 'WELCOME TO ST. XAVIER\'S COLLEGE') ?>" required>
+                                <input type="text" name="hero_title" class="form-control" value="<?= htmlspecialchars($hero_title ?? '') ?>" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Hero Subtitle</label>
-                                <input type="text" name="hero_subtitle" class="form-control" 
-                                       value="<?= htmlspecialchars($hero_content['content'] ?? 'Where Excellence Meets Opportunity') ?>" required>
+                                <input type="text" name="hero_subtitle" class="form-control" value="<?= htmlspecialchars($hero_subtitle ?? '') ?>" required>
                             </div>
                             <button type="submit" name="update_hero" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Update Hero Text
@@ -177,12 +180,11 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
                         <div class="col-md-8">
                             <div class="mb-3">
                                 <label class="form-label">About Title</label>
-                                <input type="text" name="about_title" class="form-control" 
-                                       value="<?= htmlspecialchars($about_content['title'] ?? 'About St. Xavier\'s College') ?>" required>
+                                <input type="text" name="about_title" class="form-control" value="<?= htmlspecialchars($about_title ?? '') ?>" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">About Content</label>
-                                <textarea name="about_content" class="form-control" rows="6" required><?= htmlspecialchars($about_content['content'] ?? 'St. Xavier\'s College is a premier institution dedicated to fostering academic excellence, innovation, and personal growth.') ?></textarea>
+                                <textarea name="about_content" class="form-control" rows="6" required><?= htmlspecialchars($about_content ?? '') ?></textarea>
                             </div>
                             <button type="submit" name="update_about" class="btn btn-info">
                                 <i class="fas fa-save me-2"></i>Update About Content
@@ -208,13 +210,13 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">School Name</label>
-                                <input type="text" name="school_name" class="form-control" value="<?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?>" required>
+                                <input type="text" name="school_name" class="form-control" value="<?= htmlspecialchars(getSchoolConfig('school_name', 'Your School Name')) ?>" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">School Tagline</label>
-                                <input type="text" name="school_tagline" class="form-control" value="<?= htmlspecialchars($school_info['content'] ?? 'Excellence in Education') ?>" required>
+                                <input type="text" name="school_tagline" class="form-control" value="<?= htmlspecialchars(getSchoolConfig('school_tagline', 'Excellence in Education')) ?>" required>
                             </div>
                         </div>
                     </div>

@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['update_branding'])) {
             updateSchoolConfig('school_name', $_POST['school_name']);
-            updateSchoolConfig('school_tagline', $_POST['school_tagline']);
             $message = 'School branding updated successfully!';
         }
 
@@ -150,14 +149,6 @@ while ($row = $result->fetch()) {
                                 <input type="text" name="school_name" class="form-control" 
                                        value="<?= htmlspecialchars($school_name) ?>" required>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">School Tagline</label>
-                                <input type="text" name="school_tagline" class="form-control" 
-                                       value="<?= htmlspecialchars($school_tagline) ?>" required>
-                            </div>
-                            <button type="submit" name="update_branding" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Update School Information
-                            </button>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">School Logo</label>
@@ -169,6 +160,9 @@ while ($row = $result->fetch()) {
                             <small class="text-muted">Upload new school logo (PNG, JPG, JPEG, GIF)</small>
                         </div>
                     </div>
+                    <button type="submit" name="update_branding" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update School Information
+                    </button>
                 </form>
             </div>
 

@@ -77,7 +77,7 @@ if (isset($_GET['edit'])) {
     $edit_member = $stmt->fetch();
 }
 
-$color_themes = ['red', 'blue', 'saffron', 'green', 'purple', 'teal'];
+$color_themes = ['red', 'blue', 'saffron', 'green', 'purple', 'teal', 'white'];
 ?>
 
 <!DOCTYPE html>
@@ -140,6 +140,7 @@ $color_themes = ['red', 'blue', 'saffron', 'green', 'purple', 'teal'];
         .green { background-color: #4CAF50; }
         .purple { background-color: #8e24aa; }
         .teal { background-color: #00897b; }
+        .white { background-color: #ffffff; border-color: #ccc; }
     </style>
 </head>
 <body>

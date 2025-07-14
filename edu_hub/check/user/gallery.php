@@ -1,25 +1,19 @@
-<?php include 'navbar.php'; ?>
 <?php
-// Connect to the same DB as admin
-$host = 'localhost';
-$db   = 'school_management_system';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    die('Database connection failed: ' . $e->getMessage());
-}
-$images = $pdo->query("SELECT * FROM gallery_images ORDER BY created_at DESC")->fetchAll();
-// Fetch school info from homepage_content
-$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
+require_once 'navbar.php';
+require_once '../../admin/includes/db.php';
+
+$school_name = getSchoolConfig('school_name', 'School CMS');
+$logo_path = getSchoolConfig('logo_path', '../images/logo_placeholder.png');
+
+// Always fetch all images for filtering and display
+$stmt = $pdo->query("SELECT * FROM gallery_images WHERE display_location IN ('Main Gallery', 'Both') ORDER BY created_at DESC");
+$images = $stmt->fetchAll();
+
+// Get categories for filtering (for the buttons)
+$all_categories_for_filter = [];
+$stmt = $pdo->query("SELECT DISTINCT category FROM gallery_images WHERE display_location IN ('Main Gallery', 'Both') AND category IS NOT NULL AND category != '' ORDER BY category ASC");
+$all_categories_for_filter = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -83,12 +77,12 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
             transition: transform 0.3s;
         }
         .gallery-item:hover img {
-            transform: scale(1.08) rotate(-2deg);
+            transform: scale(1.08);
         }
         .gallery-item .overlay {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            background: rgba(30,42,68,0.7);
+            background: rgba(30,42,68,0.6);
             color: #fff;
             padding: 10px 16px;
             opacity: 0;
@@ -101,31 +95,41 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
         @media (max-width: 600px) {
             .gallery-item img { height: 120px; }
         }
+        /* Scroll Animation */
+        .scroll-fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .scroll-fade-in.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
     <?php include 'navbar.php'; ?>
     <main style="margin-top: 56px;">
     <div class="gallery-header">
-        <h1 style="font-family: 'Poppins', 'Luckiest Guy', cursive, sans-serif; font-size: 2.8rem; font-weight: 900; letter-spacing: 2px; background: linear-gradient(90deg, #D32F2F 30%, #F5A623 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; text-shadow: 0 4px 24px #0002, 0 1px 0 #fff;">
-            HELLO! WELCOME TO <span style="color: #1E2A44; text-shadow: 0 2px 8px #fff3; font-size: 1.1em;"><?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?></span> PHOTO GALLERY
+        <h1 style="font-family: 'Poppins', sans-serif; font-size: 2.8rem; font-weight: 800; letter-spacing: 1.5px; color: #1E2A44; text-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            PHOTO GALLERY OF <span style="color: #D32F2F;"><?= htmlspecialchars($school_name) ?></span>
         </h1>
-        <p>WITH CREATIVE &amp; UNIQUE STYLE</p>
     </div>
-    <div class="gallery-filters">
-        <button class="btn btn-dark filter-btn" data-filter="all">All</button>
-        <button class="btn btn-outline-dark filter-btn" data-filter="photography">Photography</button>
-        <button class="btn btn-outline-dark filter-btn" data-filter="travel">Travel</button>
-        <button class="btn btn-outline-dark filter-btn" data-filter="nature">Nature</button>
-        <button class="btn btn-outline-dark filter-btn" data-filter="fashion">Fashion</button>
-        <button class="btn btn-outline-dark filter-btn" data-filter="lifestyle">Life Style</button>
+
+    <div class="container text-center mb-4">
+        <div class="gallery-filters">
+            <button class="btn btn-primary filter-btn" data-filter="all">All</button>
+            <?php foreach ($all_categories_for_filter as $cat): ?>
+                <button class="btn btn-outline-primary filter-btn" data-filter="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars(ucfirst($cat)) ?></button>
+            <?php endforeach; ?>
+        </div>
     </div>
     <div class="gallery-grid">
         <?php if (empty($images)): ?>
-            <div class="alert alert-info col-12">No images found. Please check back later!</div>
+            <div class="alert alert-info col-12">No images found in the gallery.</div>
         <?php else: ?>
             <?php foreach ($images as $image): ?>
-                <div class="gallery-item" data-category="<?= htmlspecialchars($image['category']) ?>">
+                <div class="gallery-item scroll-fade-in" data-category="<?= htmlspecialchars($image['category']) ?>">
                     <img src="<?= htmlspecialchars($image['image_path']) ?>" alt="<?= htmlspecialchars($image['title']) ?>">
                     <div class="overlay">
                         <?= htmlspecialchars($image['title']) ?>
@@ -134,10 +138,11 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
+
     <!-- Lightbox Modal -->
     <div id="lightboxModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(30,42,68,0.85); align-items:center; justify-content:center;">
         <span id="lightboxClose" style="position:absolute; top:30px; right:40px; font-size:2.5rem; color:#fff; cursor:pointer; z-index:10001;">&times;</span>
-        <img id="lightboxImg" src="" alt="Large Preview" style="max-width:90vw; max-height:80vh; border-radius:32px; box-shadow:0 4px 32px #000a; display:block; margin:auto; transform: scale(0.85) rotate(-3deg); opacity:0; transition: all 0.35s cubic-bezier(.4,2,.6,1);">
+        <img id="lightboxImg" src="" alt="Large Preview" style="max-width:90vw; max-height:80vh; border-radius:32px; box-shadow:0 4px 32px #000a; display:block; margin:auto; transform: scale(0.95); opacity:0; transition: all 0.35s cubic-bezier(.4,2,.6,1);">
     </div>
     <?php include 'footer.php'; ?>
     </main>
@@ -146,10 +151,10 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
         const galleryItems = document.querySelectorAll('.gallery-item');
         filterBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                filterBtns.forEach(b => b.classList.remove('btn-dark'));
-                filterBtns.forEach(b => b.classList.add('btn-outline-dark'));
-                this.classList.remove('btn-outline-dark');
-                this.classList.add('btn-dark');
+                filterBtns.forEach(b => b.classList.remove('btn-primary'));
+                filterBtns.forEach(b => b.classList.add('btn-outline-primary'));
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
                 const filter = this.getAttribute('data-filter');
                 galleryItems.forEach(item => {
                     if (filter === 'all' || item.getAttribute('data-category').includes(filter)) {
@@ -176,7 +181,7 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
             });
         });
         function closeLightbox() {
-            lightboxImg.style.transform = 'scale(0.85) rotate(-3deg)';
+            lightboxImg.style.transform = 'scale(0.95)';
             lightboxImg.style.opacity = '0';
             setTimeout(() => {
                 lightboxModal.style.display = 'none';
@@ -188,6 +193,26 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
             if (e.target === lightboxModal) {
                 closeLightbox();
             }
+        });
+
+        // Scroll animation with Intersection Observer
+        const observerOptions = {
+            root: null, // viewport
+            rootMargin: '0px',
+            threshold: 0.1 // 10% of item visible
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target); // Stop observing once animated
+                }
+            });
+        }, observerOptions);
+
+        galleryItems.forEach(item => {
+            observer.observe(item);
         });
     </script>
 <!-- Bootstrap JS -->
