@@ -177,6 +177,15 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
+                    <a href="leadership_manager.php" class="nav-card">
+                        <div class="text-center">
+                            <i class="fas fa-users text-info"></i>
+                            <h5>Leadership Management</h5>
+                            <p class="text-muted">Manage leadership cards and sections</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
                     <a href="gallery.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-images text-purple"></i>
@@ -195,7 +204,7 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="achievement_manager.php" class="nav-card">
+                    <a href="achievements.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-trophy text-warning"></i>
                             <h5>Achievement Manager</h5>
@@ -204,7 +213,7 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </a>
                 </div>
                 <div class="col-md-4">
-                    <a href="contact_manager.php" class="nav-card">
+                    <a href="contact.php" class="nav-card">
                         <div class="text-center">
                             <i class="fas fa-envelope text-danger"></i>
                             <h5>Contact Manager</h5>

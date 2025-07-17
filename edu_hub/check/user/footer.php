@@ -1,7 +1,7 @@
 <?php
 // Connect to the same DB as admin
 $host = 'localhost';
-$db   = 'school_cms_system';
+$db   = 'school_management_system';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';

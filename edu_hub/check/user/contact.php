@@ -1,7 +1,7 @@
 <?php
 // Connect to the same DB as admin
 $host = 'localhost';
-$db   = 'school_cms_system';
+$db   = 'school_management_system';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -16,193 +16,125 @@ try {
 } catch (PDOException $e) {
     $pdo = null;
 }
-$footer_data = [];
+// Fetch school info from homepage manager
+$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
+$school_name = $school_info['title'] ?? 'Your School Name';
+$school_tagline = $school_info['content'] ?? '';
+// Fetch contact info from contact_info table
+$contact_data = [];
 if ($pdo) {
-    $result = $pdo->query("SELECT section, content FROM footer_content");
+    $result = $pdo->query("SELECT field, value FROM contact_info");
     while ($row = $result->fetch()) {
-        $footer_data[$row['section']] = $row['content'];
+        $contact_data[$row['field']] = $row['value'];
     }
 }
-// Fetch school info from homepage_content
-$school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
-// Fetch contact info from school_config
-$school_address = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_address'")->fetchColumn();
-$school_phone = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_phone'")->fetchColumn();
-$school_email = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_email'")->fetchColumn();
-$office_hours = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'office_hours'")->fetchColumn();
-$google_maps = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'google_maps'")->fetchColumn();
-$school_logo = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_logo'")->fetchColumn();
+$address = $contact_data['address'] ?? '';
+$phone = $contact_data['phone'] ?? '';
+$email = $contact_data['email'] ?? '';
+$office_hours = $contact_data['office_hours'] ?? '';
+$map_embed = $contact_data['map_embed'] ?? '';
+
+// Handle contact form submission
+$success_message = '';
+$error_message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $subject = trim($_POST['subject'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+
+    if ($name && $email && $subject && $message) {
+        $stmt = $pdo->prepare("INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)");
+        if ($stmt->execute([$name, $email, $subject, $message])) {
+            $success_message = 'Your message has been sent successfully!';
+        } else {
+            $error_message = 'There was an error sending your message. Please try again later.';
+        }
+    } else {
+        $error_message = 'Please fill in all fields.';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>St. Xavier's College - Contact Us</title>
+    <title>Contact Us - <?= htmlspecialchars($school_name) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #e6ecf4 0%, #c9d6e8 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        .header-crest {
-            width: 80px;
-            height: 80px;
-            background: url('../images/school.png') no-repeat center;
-            background-size: contain;
-            margin: 0 auto 1rem;
-        }
-        .contact-section {
-            background-color: #ffffff;
-            padding: 4rem 3rem;
-            border-radius: 25px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-            margin-top: 3rem;
-            transition: transform 0.3s ease;
-        }
-        .contact-section:hover {
-            transform: translateY(-5px);
-        }
-        h1 {
-            color: #1a252f;
-            font-family: 'Playfair Display', serif;
-            font-size: 3.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2.5rem;
-            letter-spacing: 1px;
-        }
-        .contact-info {
-            background: linear-gradient(135deg, #f9fbfd 0%, #eef2f7 100%);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2.5rem;
-        }
-        .contact-info p {
-            color: #2d3e50;
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-        }
-        .contact-info i {
-            color: #2c82d9;
-            font-size: 1.3rem;
-            margin-right: 1.2rem;
-            transition: color 0.3s ease;
-        }
-        .contact-info p:hover i {
-            color: #1e5ea0;
-        }
-        .contact-form label {
-            color: #1a252f;
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-        .contact-form input, .contact-form textarea {
-            border: 2px solid #e0e6ed;
-            border-radius: 12px;
-            padding: 12px 15px;
-            width: 100%;
-            margin-bottom: 1.5rem;
-            background: #ffffff;
-            font-size: 1rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .contact-form input:focus, .contact-form textarea:focus {
-            border-color: #2c82d9;
-            box-shadow: 0 0 10px rgba(44, 130, 217, 0.2);
-            outline: none;
-        }
-        .contact-form button {
-            background: linear-gradient(135deg, #2c82d9 0%, #1e5ea0 100%);
-            color: #fff;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .contact-form button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(44, 130, 217, 0.3);
-        }
-        @media (max-width: 900px) {
-            .contact-section { padding: 2.5rem 1.2rem; }
-            .contact-info { padding: 1.2rem; }
-        }
+        body { background: #f7f8fa; font-family: 'Open Sans', Arial, sans-serif; }
+        .contact-section { margin-top: 90px; margin-bottom: 40px; }
+        .contact-card { border-radius: 18px; box-shadow: 0 4px 24px rgba(30,42,68,0.08); }
+        .contact-form-card { border-radius: 18px; box-shadow: 0 4px 24px rgba(30,42,68,0.10); }
+        .form-control:focus { box-shadow: 0 0 0 2px #1E2A4422; border-color: #1E2A44; }
+        .btn-primary { background: #1E2A44; border: none; }
+        .btn-primary:hover { background: #16305a; }
+        .contact-label { font-weight: 600; }
+        .contact-link { color: #1E2A44; font-weight: 500; }
+        .contact-link:hover { color: #D32F2F; text-decoration: underline; }
+        .map-responsive { overflow: hidden; padding-bottom: 56.25%; position: relative; height: 0; border-radius: 12px; }
+        .map-responsive iframe { left: 0; top: 0; height: 100%; width: 100%; position: absolute; border-radius: 12px; }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
     <?php include 'navbar.php'; ?>
-    <main style="margin-top: 60px;">
-    <section class="contact-section">
-        <div class="container mx-auto px-4">
-            <div class="header-crest"></div>
-            <h1>Contact Us</h1>
-            <!-- School Logo and Name -->
-            <div class="text-center mb-4">
-                <img src="<?= $school_logo ? htmlspecialchars($school_logo) : '../images/school.png' ?>" alt="School Logo" class="logo-img mb-2" style="max-height: 80px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0002;">
-                <h1 class="fw-bold" style="font-size: 2.2rem; color: #1E2A44; letter-spacing: 1px;">
-                    <?= htmlspecialchars($school_info['title'] ?? 'Your School Name') ?>
-                </h1>
-            </div>
-            <!-- Contact Details -->
-            <div class="contact-details">
-                <h3>Contact Details</h3>
-                <p><strong>College Address:</strong> <?= htmlspecialchars($school_address) ?></p>
-                <p><strong>Phone Number:</strong> <?= htmlspecialchars($school_phone) ?></p>
-                <p><strong>Email Address:</strong> <?= htmlspecialchars($school_email) ?></p>
-                <p><strong>Office Hours:</strong><br><?= nl2br(htmlspecialchars($office_hours)) ?></p>
-            </div>
-            <!-- Google Maps Embed -->
-            <?php if ($google_maps): ?>
-            <div class="google-maps-embed mt-4">
-                <?= $google_maps ?>
-            </div>
-            <?php endif; ?>
-            <!-- Contact Information -->
-            <div class="contact-info">
-                <p><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($footer_data['contact_address'] ?? 'St. Xavier\'s College, 5 Mahapalika Marg, Mumbai, Maharashtra 400001, India') ?></p>
-                <p><i class="fas fa-phone"></i> Phone: <?= htmlspecialchars($footer_data['contact_phone'] ?? '+91 22 2262 0662') ?></p>
-                <p><i class="fas fa-envelope"></i> Email: <?= htmlspecialchars($footer_data['contact_email'] ?? 'info@stxavierscollege.edu') ?></p>
+    <main class="container contact-section">
+        <div class="row g-5 align-items-stretch">
+            <!-- Map and Contact Details -->
+            <div class="col-md-6">
+                <div class="contact-card bg-white p-4 mb-4">
+                    <h2 class="h4 mb-4"><i class="fas fa-map-marker-alt me-2"></i>Our Location</h2>
+                    <?php if ($map_embed): ?>
+                        <div class="map-responsive mb-4">
+                            <?= $map_embed ?>
+                        </div>
+                    <?php endif; ?>
+                    <h2 class="h4 mb-3"><i class="fas fa-phone-alt me-2"></i>Get in Touch</h2>
+                    <p class="mb-2">We'd love to hear from you! Reach out with any questions or inquiries.</p>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><span class="contact-label">Address:</span><br><?= htmlspecialchars($address) ?></li>
+                        <li class="mb-2"><span class="contact-label">Phone:</span><br><a href="tel:<?= htmlspecialchars($phone) ?>" class="contact-link"><?= htmlspecialchars($phone) ?></a></li>
+                        <li class="mb-2"><span class="contact-label">Email:</span><br><a href="mailto:<?= htmlspecialchars($email) ?>" class="contact-link"><?= htmlspecialchars($email) ?></a></li>
+                        <li><span class="contact-label">Office Hours:</span><br><?= nl2br(htmlspecialchars($office_hours)) ?></li>
+                    </ul>
+                </div>
             </div>
             <!-- Contact Form -->
-            <div class="contact-form">
-                <form action="#" method="POST">
-                    <div class="mb-4">
-                        <label for="name" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="subject" class="form-label">Subject</label>
-                        <input type="text" class="form-control" id="subject" name="subject" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="message" class="form-label">Your Message</label>
-                        <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn">Submit Inquiry</button>
-                </form>
+            <div class="col-md-6">
+                <div class="contact-form-card bg-white p-4 h-100 d-flex flex-column justify-content-center">
+                    <h2 class="h4 mb-4 text-center">Send Us a Message</h2>
+                    <?php if ($success_message): ?>
+                        <div class="alert alert-success"><?= htmlspecialchars($success_message) ?></div>
+                    <?php elseif ($error_message): ?>
+                        <div class="alert alert-danger"><?= htmlspecialchars($error_message) ?></div>
+                    <?php endif; ?>
+                    <form action="#" method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="Your Name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Your Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" id="subject" name="subject" class="form-control" placeholder="Subject" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea id="message" name="message" class="form-control" rows="5" placeholder="Your Message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                    </form>
+                </div>
             </div>
         </div>
-    </section>
     </main>
     <?php include 'footer.php'; ?>
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 
