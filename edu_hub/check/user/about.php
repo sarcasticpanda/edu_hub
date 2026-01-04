@@ -1,4 +1,5 @@
 <?php
+session_start();
 // DB connection
 $host = 'localhost';
 $db   = 'school_management_system';
@@ -112,74 +113,108 @@ foreach ($leadership as $l) {
         }
         .leadership-heading-dominant {
             font-family: 'Poppins', sans-serif;
-            font-weight: 900;
-            letter-spacing: 2px;
-            font-size: 3.2rem;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(90deg, var(--primary-teal) 40%, var(--accent-red) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .leadership-management {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 32px 16px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 40px;
-            background: none;
-            border-radius: 0;
-            box-shadow: 0 4px 24px rgba(30,42,68,0.13);
-        }
-        .leadership-card {
-            display: inline-block;
-            width: 240px;
-            height: 260px;
-            margin-right: 24px;
-            border-radius: 14px;
-            overflow: hidden;
-            background: #fff;
-            box-shadow: 0 2px 12px 0 rgba(30,42,68,0.10);
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 2px solid rgba(26, 188, 156, 0.2);
-            vertical-align: top;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 2.8rem;
+            line-height: 1.2;
+            margin-bottom: 3rem;
+            color: #1E2A44;
+            text-transform: capitalize;
             position: relative;
         }
-        
-        .leadership-card:last-child {
-            margin-right: 0;
+        .leadership-heading-dominant::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: #00539C;
+            border-radius: 2px;
+        }
+        .leadership-management {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 50px 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            border: none;
+        }
+        .leadership-card {
+            display: block;
+            width: 100%;
+            height: 380px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+        }
+        .leadership-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+        .leadership-card:hover::before {
+            opacity: 1;
         }
         .leadership-card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.5s ease;
+            filter: grayscale(0%);
         }
         .leadership-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+        }
+        .leadership-card:hover img {
             transform: scale(1.05);
-            box-shadow: 0 8px 32px rgba(30,42,68,0.22);
         }
         .leadership-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            padding: 0.7rem 1.2rem;
-            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,83,156,0.75) 100%);
-            color: #fff;
-            border-bottom-left-radius: 14px;
-            border-bottom-right-radius: 14px;
+            padding: 1.5rem;
+            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 30%, rgba(255,255,255,0.98) 100%);
+            color: #1E2A44;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            z-index: 2;
+            backdrop-filter: blur(8px);
         }
         .leadership-overlay .name {
-            font-weight: 800;
-            font-size: 1.1rem;
-            margin-bottom: 0.1rem;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.3px;
+            line-height: 1.3;
+            color: #1E2A44;
         }
         .leadership-overlay .role {
-            font-weight: 700;
-            font-size: 1rem;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #00539C;
+            letter-spacing: 0.2px;
         }
         .gallery-modal .modal-dialog {
             max-width: 900px;
@@ -203,75 +238,104 @@ foreach ($leadership as $l) {
             background: #fff;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(30,42,68,0.10);
-            transition: transform 0.3s, box-shadow 0.3s;
-            height: 220px;
-            border: 2px solid rgba(26, 188, 156, 0.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+            height: 260px;
+            border: none;
             cursor: pointer;
             display: flex;
             flex-direction: column;
         }
+        .gallery-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
+        }
         .gallery-card img {
             width: 100%;
-            height: 140px;
+            height: 160px;
             object-fit: cover;
-            transition: transform 0.3s;
+            transition: transform 0.5s ease;
         }
         .gallery-card:hover img {
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
         .gallery-card-content {
-            padding: 1rem;
+            padding: 1.2rem;
             text-align: center;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background: linear-gradient(135deg, #ffffff 70%, var(--light-gray) 100%);
+            background: #ffffff;
         }
         .gallery-card-content h5 {
             font-family: 'Poppins', sans-serif;
             font-size: 1.1rem;
             font-weight: 600;
-            color: var(--dark-gray);
-            margin-bottom: 0.5rem;
+            color: #1E2A44;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.2px;
         }
         .gallery-card-content p {
+            font-family: 'Open Sans', sans-serif;
             font-size: 0.95rem;
-            color: #555;
+            font-weight: 500;
+            color: #00539C;
             margin: 0;
+            letter-spacing: 0.2px;
         }
         .leadership-modal .modal-content {
-            background: linear-gradient(135deg, #ffffff 0%, var(--light-gray) 100%);
-            border: 2px solid rgba(26, 188, 156, 0.1);
+            background: #ffffff;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
             text-align: center;
+            overflow: hidden;
         }
         .leadership-modal .modal-header {
-            background: var(--secondary-blue);
-            color: #fff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background: #f8f9fa;
+            color: #1E2A44;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1.5rem 2rem;
+        }
+        .leadership-modal .modal-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #1E2A44;
         }
         .leadership-modal .modal-body {
-            background: #fff;
-            padding: 2rem;
+            background: #ffffff;
+            padding: 2.5rem;
         }
         .leadership-modal .modal-details {
-            max-width: 500px;
+            max-width: 550px;
             margin: 0 auto;
         }
         .leadership-modal h5 {
             font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            color: var(--dark-gray);
-            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #1E2A44;
+            margin-bottom: 1rem;
+            letter-spacing: 0.3px;
         }
         .leadership-modal p {
-            font-size: 1rem;
-            color: #444;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1.05rem;
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 0.8rem;
+        }
+        .leadership-modal p strong {
+            color: #1E2A44;
+            font-weight: 600;
         }
         .leadership-modal img {
-            border: 2px solid rgba(26, 188, 156, 0.2);
-            border-radius: 8px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
         }
         @media (max-width: 768px) {
             .leadership-management {
@@ -366,7 +430,7 @@ foreach ($leadership as $l) {
                     </div>
                 </div>
             </section>
-            <section class="container py-5 text-center">
+            <section class="container py-5 text-center" id="leadership">
                 <h2 class="leadership-heading-dominant">Leadership Management</h2>
                 <div class="leadership-management">
                     <?php foreach ($sections['Individual'] as $leader): ?>

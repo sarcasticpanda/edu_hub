@@ -1,6 +1,5 @@
 <?php
 // Navbar for inclusion in all pages
-// Use the same DB connection as admin/includes/db.php
 $host = 'localhost';
 $db   = 'school_management_system';
 $user = 'root';
@@ -22,8 +21,8 @@ if ($pdo) {
     $row = $pdo->query("SELECT config_value FROM school_config WHERE config_key = 'school_logo'")->fetch();
     $school_logo = $row ? $row['config_value'] : '';
 }
-// Fetch school info from homepage_content
 $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'school_info' LIMIT 1")->fetch();
+$student_logged_in = isset($_SESSION['student_email']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -178,13 +177,14 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
         }
         .navbar-nav {
             margin-left: 0 !important;
-            margin-right: 0 !important;
+            margin-right: auto !important;
             gap: 18px;
         }
         .navbar-collapse {
             display: flex !important;
-            justify-content: center !important;
+            justify-content: flex-start !important;
             align-items: center !important;
+            padding-left: 120px;
         }
         .container-fluid {
             padding-left: 0 !important;
@@ -195,11 +195,11 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
 <body>
     <nav class="navbar navbar-expand-lg bg-primary text-white shadow-lg py-3 fixed-top" id="navbar">
         <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center me-4" href="index.php" style="gap: 10px;">
+            <a class="navbar-brand d-flex align-items-center me-4" href="/2026/edu_hub/edu_hub/check/user/index.php" style="gap: 10px;">
                 <?php
-                $logo_path = '../images/' . ($school_logo ? htmlspecialchars($school_logo) : 'school.png');
-                if (!file_exists(__DIR__ . '/' . $logo_path)) {
-                    $logo_path = '../images/school.png';
+                $logo_path = '/2026/edu_hub/edu_hub/check/user/../images/' . ($school_logo ? htmlspecialchars($school_logo) : 'school.png');
+                if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $logo_path)) {
+                    $logo_path = '/2026/edu_hub/edu_hub/check/user/../images/school.png';
                 }
                 ?>
                 <img src="<?= $logo_path ?>" alt="School Logo" class="logo-img" style="height:44px; width:auto; border-radius:6px; object-fit:cover; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.07);">
@@ -209,26 +209,115 @@ $school_info = $pdo->query("SELECT * FROM homepage_content WHERE section = 'scho
                     <span class="navbar-toggler-icon"></span>
                 </button>
             </div>
-            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                <ul class="navbar-nav mx-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="index.php"><i class="fas fa-home me-2"></i>Home</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="about.php"><i class="fas fa-info-circle me-2"></i>About Us</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="gallery.php"><i class="fas fa-images me-2"></i>Gallery</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="contact.php"><i class="fas fa-envelope me-2"></i>Contact Us</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="user_portal/register_form.php"><i class="fas fa-user-plus me-2"></i>Registration</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="../../admin/index.php"><i class="fas fa-user-shield me-2"></i>Continue as Admin</a></li>
+            <div class="collapse navbar-collapse justify-content-start" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="/2026/edu_hub/edu_hub/check/user/index.php"><i class="fas fa-home me-2"></i>Home</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="/2026/edu_hub/edu_hub/check/user/about.php"><i class="fas fa-info-circle me-2"></i>About Us</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="/2026/edu_hub/edu_hub/check/user/gallery.php"><i class="fas fa-images me-2"></i>Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="/2026/edu_hub/edu_hub/check/user/contact.php"><i class="fas fa-envelope me-2"></i>Contact Us</a></li>
+                    <?php if ($student_logged_in): ?>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="/2026/edu_hub/edu_hub/student_dashboard.php"><i class="fas fa-file-alt me-2"></i>Application</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="/2026/edu_hub/edu_hub/student_logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="registrationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-plus me-2"></i>Registration
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="registrationDropdown">
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#authModal"><i class="fas fa-user-graduate me-2"></i>Login/Signup as Student</a></li>
+                                <li><a class="dropdown-item" href="/2026/edu_hub/edu_hub/admin/index.php"><i class="fas fa-user-shield me-2"></i>Continue as Admin</a></li>
+                            </ul>
+                        </li>
+                    <?php endif; ?>
                 </ul>
                 <div class="d-flex align-items-center ms-3">
-                    <img src="../images/flag.jpeg" alt="Telangana Flag" class="circle-logo">
-                    <img src="../images/cm.jpeg" alt="CM of Telangana" class="circle-logo">
-                    <img src="../images/edu.jpeg" alt="Education Minister" class="circle-logo">
+                    <img src="/2026/edu_hub/edu_hub/check/user/../images/flag.jpeg" alt="Telangana Flag" class="circle-logo">
+                    <img src="/2026/edu_hub/edu_hub/check/user/../images/cm.jpeg" alt="CM of Telangana" class="circle-logo">
+                    <img src="/2026/edu_hub/edu_hub/check/user/../images/edu.jpeg" alt="Education Minister" class="circle-logo">
                 </div>
             </div>
         </div>
     </nav>
-    <!-- Scripts -->
+        <!-- Login/Signup Modal -->
+        <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="authModalLabel">Student Login / Signup</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <?php
+                        // Generate Google OAuth URL directly
+                        require_once __DIR__ . '/../../vendor/autoload.php';
+                        require_once __DIR__ . '/../../config.php';
+                        $googleClient = new Google_Client();
+                        $googleClient->setClientId(GOOGLE_CLIENT_ID);
+                        $googleClient->setClientSecret(GOOGLE_CLIENT_SECRET);
+                        $googleClient->setRedirectUri(GOOGLE_REDIRECT_URI);
+                        $googleClient->addScope('email');
+                        $googleClient->addScope('profile');
+                        $googleClient->setAccessType('offline');
+                        $googleClient->setPrompt('select_account');
+                        $googleAuthUrl = $googleClient->createAuthUrl();
+                        ?>
+                        <a href="<?= htmlspecialchars($googleAuthUrl) ?>" class="btn google-btn w-100 mb-2">
+                            <img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png" alt="Sign in with Google" style="width:100%;max-width:220px;display:block;margin:auto;">
+                        </a>
+                        <div class="or-divider text-center my-2">or</div>
+                        <form id="modalLoginForm" method="post" action="/2026/edu_hub/edu_hub/student_login_signup.php">
+                            <div class="mb-3">
+                                <label for="modalEmail" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="modalEmail" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="modalPassword" name="password" required>
+                            </div>
+                            <button type="submit" name="login" class="btn btn-primary w-100">Login</button>
+                        </form>
+                        <div class="or-divider text-center my-2">New user?</div>
+                        <a href="/2026/edu_hub/edu_hub/student_email_register.php" class="btn btn-secondary w-100">Sign up with Email</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Scripts -->
     <link rel="stylesheet" href="style.css">
+        <style>
+            /* Ensure dropdown-menu displays correctly */
+            .dropdown-menu { display: none; position: absolute; background: #fff; min-width: 180px; box-shadow: 0 4px 16px rgba(30,42,68,0.10); z-index: 2000; }
+            .dropdown.show .dropdown-menu { display: block; }
+        </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Fallback: force dropdown to work if Bootstrap JS is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                var dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+                dropdownToggles.forEach(function(toggle) {
+                    toggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var parent = this.closest('.dropdown');
+                        if (parent.classList.contains('show')) {
+                            parent.classList.remove('show');
+                        } else {
+                            document.querySelectorAll('.dropdown.show').forEach(function(open) { open.classList.remove('show'); });
+                            parent.classList.add('show');
+                        }
+                    });
+                });
+                // Close dropdown on outside click
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.dropdown')) {
+                        document.querySelectorAll('.dropdown.show').forEach(function(open) { open.classList.remove('show'); });
+                    }
+                });
+            });
+        </script>
     <script>
         // Consolidated scroll event listener
         document.addEventListener('DOMContentLoaded', () => {

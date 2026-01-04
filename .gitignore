@@ -1,2 +1,49 @@
-node_modules/
+# Environment Configuration Files
+config.php
 .env
+.env.local
+
+# Database credentials
+**/db.php
+!**/db.example.php
+
+# Vendor dependencies
+vendor/
+composer.lock
+composer.phar
+
+# Uploaded files (contains user data)
+uploads/
+**/uploads/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+error_log
+
+# Temporary files
+tmp/
+temp/
+cache/
+
+# Backup files
+*.bak
+*.backup
+*.sql
+
+# Session files
+sessions/
+
+# Node modules (if any)
+node_modules/

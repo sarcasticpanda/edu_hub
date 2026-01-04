@@ -156,35 +156,38 @@ function render_hero_title($title) {
         }
         .notice-title {
             font-family: 'Roboto Slab', 'Merriweather', 'Georgia', serif;
-            font-size: 1.22rem;
+            font-size: 1.5rem;
             font-weight: 900;
-            margin-bottom: 0.18rem;
+            margin-bottom: 0.25rem;
             margin-top: -0.3rem;
             text-align: left;
             color: #D32F2F;
             letter-spacing: 0.5px;
             text-shadow: none;
             text-transform: none;
+            line-height: 1.4;
         }
         .notice-subheading {
             font-family: 'Roboto', 'Poppins', Arial, sans-serif;
-            font-size: 1.01rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: #00539C;
-            margin-bottom: 0.12rem;
+            margin-bottom: 0.18rem;
             text-align: left;
             letter-spacing: 0.5px;
             opacity: 1;
             text-transform: uppercase;
+            line-height: 1.3;
         }
         .notice-preview {
             font-family: 'Segoe UI', 'Open Sans', Arial, sans-serif;
-            font-size: 1.09rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: #1E2A44;
             text-align: left;
             opacity: 0.96;
-            margin-top: 0.45rem;
+            margin-top: 0.5rem;
+            line-height: 1.5;
         }
         .notice-card:hover {
             box-shadow: 0 12px 36px rgba(0,83,156,0.18);
@@ -211,54 +214,143 @@ function render_hero_title($title) {
             pointer-events: none;
         }
         .gallery-section {
-            background: linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%);
-            border-radius: 32px;
-            box-shadow: 0 8px 32px rgba(0,83,156,0.10), 0 1.5px 8px rgba(0,0,0,0.04);
-            padding: 2.5rem 1.5rem 2.5rem 1.5rem;
-            margin-bottom: 2.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e8eef3 100%);
+            border-radius: 28px;
+            box-shadow: 0 8px 32px rgba(30,42,68,0.12), 0 2px 8px rgba(0,0,0,0.04);
+            padding: 3rem 2rem;
+            margin-bottom: 3rem;
             position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(0,83,156,0.08);
+        }
+        .gallery-section::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -15%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(0,83,156,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+        .gallery-section::after {
+            content: '';
+            position: absolute;
+            bottom: -25%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(211,47,47,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-15px) translateX(8px); }
         }
         .gallery-title-funky {
-            font-family: 'Luckiest Guy', cursive, sans-serif;
-            font-size: 2.7rem;
-            color: #4CAF50;
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #1E2A44;
             letter-spacing: 2px;
-            text-shadow: 2px 2px 0 #00539C, 0 2px 8px #fff3;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+        }
+        .gallery-title-funky::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(90deg, #D32F2F 0%, #FF9933 50%, #00539C 100%);
+            border-radius: 2px;
         }
         .gallery-row-wrapper {
             overflow: hidden;
             width: 100%;
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 20px;
+            padding: 10px 0;
+            z-index: 1;
         }
         .gallery-row {
             display: flex;
             width: max-content;
             animation-timing-function: linear;
+            will-change: transform;
         }
         .gallery-row-1 {
-            animation: scroll-left 30s linear infinite;
+            animation: scroll-left 40s linear infinite;
         }
         .gallery-row-2 {
-            animation: scroll-right 36s linear infinite;
+            animation: scroll-right 45s linear infinite;
+        }
+        .gallery-row:hover {
+            animation-play-state: paused;
         }
         .gallery-img {
-            height: 180px;
-            width: 320px;
+            height: 220px;
+            width: 380px;
             border-radius: 16px;
-            margin: 0 16px;
-            box-shadow: 0 2px 8px rgba(0,83,156,0.10);
+            margin: 0 20px;
+            box-shadow: 0 4px 16px rgba(30,42,68,0.1), 0 2px 6px rgba(0,0,0,0.04);
             object-fit: cover;
-            background: #eee;
-            transition: transform 0.3s, box-shadow 0.3s, filter 0.3s;
-            border: 3px solid transparent;
+            background: #f0f4f8;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid #ffffff;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .gallery-img::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(30,42,68,0.7) 0%, rgba(211,47,47,0.6) 100%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            z-index: 1;
+        }
+        .gallery-img:hover::before {
+            opacity: 1;
+        }
+        .gallery-img::after {
+            content: '\f00e';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2.5rem;
+            color: #ffffff;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
         }
         .gallery-img:hover {
-            transform: scale(1.08) rotate(-2deg);
-            box-shadow: 0 8px 32px rgba(0,83,156,0.18);
-            filter: brightness(1.1) saturate(1.2);
-            border: 3px solid #FF9933;
+            transform: scale(1.08) translateY(-8px);
+            box-shadow: 0 16px 48px rgba(30,42,68,0.2), 0 6px 20px rgba(0,0,0,0.08);
+            border-color: #D32F2F;
+            z-index: 10;
+        }
+        .gallery-img:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        .gallery-img:active {
+            transform: scale(1.03) translateY(-4px);
         }
         @keyframes scroll-left {
             0% { transform: translateX(0); }
@@ -269,23 +361,44 @@ function render_hero_title($title) {
             100% { transform: translateX(0); }
         }
         .explore-btn {
-            background: #FF9933;
+            background: linear-gradient(135deg, #D32F2F 0%, #1E2A44 100%);
             color: #fff;
-            border-radius: 24px;
-            padding: 12px 36px;
+            border-radius: 28px;
+            padding: 14px 42px;
             font-size: 1.2rem;
-            font-weight: 600;
-            margin-top: 18px;
-            box-shadow: 0 2px 8px rgba(0,83,156,0.10);
-            border: none;
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
-            letter-spacing: 1px;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 16px rgba(211,47,47,0.25), 0 2px 6px rgba(0,0,0,0.08);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .explore-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #00539C 0%, #FF9933 100%);
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
+        }
+        .explore-btn:hover::before {
+            left: 0;
         }
         .explore-btn:hover {
-            background: #D32F2F;
             color: #fff;
-            box-shadow: 0 8px 32px rgba(211,47,47,0.18);
-            transform: scale(1.05);
+            box-shadow: 0 8px 32px rgba(0,83,156,0.3), 0 4px 12px rgba(0,0,0,0.12);
+            transform: translateY(-2px) scale(1.03);
+            border-color: rgba(255,255,255,0.4);
+        }
+        .explore-btn:active {
+            transform: translateY(0) scale(1);
         }
         .who-section {
             background: linear-gradient(135deg, #fff6f6 60%, #fbeaea 100%);
@@ -719,14 +832,19 @@ function render_hero_title($title) {
         </div>
     </div>
 
-    <!-- Gallery and Principal Placeholder -->
+    <!-- Gallery Section with Lightbox -->
     <section class="container px-4 py-12 gallery-section text-center">
         <h2 class="gallery-title-funky animate-slide-in">Gallery</h2>
         <div class="gallery-row-wrapper mb-4">
             <div class="gallery-row gallery-row-1 d-flex align-items-center">
                 <?php foreach ($home_gallery_images as $index => $image): ?>
                     <?php if ($index % 2 == 0): // For alternating rows, take even indices for row 1 ?>
-                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image">
+                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image" onclick="openLightbox('<?= htmlspecialchars($image['image_path']) ?>')">
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <?php foreach ($home_gallery_images as $index => $image): ?>
+                    <?php if ($index % 2 == 0): ?>
+                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image" onclick="openLightbox('<?= htmlspecialchars($image['image_path']) ?>')">
                     <?php endif; ?>
                 <?php endforeach; ?>
             </div>
@@ -735,13 +853,25 @@ function render_hero_title($title) {
             <div class="gallery-row gallery-row-2 d-flex align-items-center">
                 <?php foreach ($home_gallery_images as $index => $image): ?>
                     <?php if ($index % 2 != 0): // For alternating rows, take odd indices for row 2 ?>
-                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image">
+                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image" onclick="openLightbox('<?= htmlspecialchars($image['image_path']) ?>')">
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <?php foreach ($home_gallery_images as $index => $image): ?>
+                    <?php if ($index % 2 != 0): ?>
+                        <img src="<?= htmlspecialchars($image['image_path']) ?>" class="gallery-img" alt="Gallery Image" onclick="openLightbox('<?= htmlspecialchars($image['image_path']) ?>')">
                     <?php endif; ?>
                 <?php endforeach; ?>
             </div>
         </div>
-        <a href="view_gallery.php" class="explore-btn">Explore More</a>
+        <a href="gallery.php" class="explore-btn"><i class="fas fa-images me-2"></i>Explore More</a>
     </section>
+
+    <!-- Lightbox Modal -->
+    <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img class="lightbox-content" id="lightboxImg">
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
 
      <!-- Who is Who Section -->
      <section class="container px-4 py-12 who-section text-center position-relative">
@@ -766,7 +896,7 @@ function render_hero_title($title) {
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-        <a href="#" class="know-more-btn mt-3">Know More</a>
+        <a href="about.php#leadership" class="know-more-btn mt-3"><i class="fas fa-users me-2"></i>Know More</a>
     </section>
 
     <!-- Additional Content: Achievements -->
@@ -797,6 +927,142 @@ function render_hero_title($title) {
     <!-- Bootstrap JS and Custom JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/main.js"></script>
+    
+    <!-- Lightbox Modal CSS and JavaScript -->
+    <style>
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            padding: 40px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(30,42,68,0.96);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .lightbox-content {
+            margin: auto;
+            display: block;
+            max-width: 85%;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.2);
+            border: 3px solid rgba(255,255,255,0.1);
+            animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.3s ease;
+        }
+        
+        .lightbox-content:hover {
+            transform: scale(1.02);
+        }
+        
+        @keyframes zoomIn {
+            from { 
+                transform: scale(0.5); 
+                opacity: 0;
+            }
+            to { 
+                transform: scale(1); 
+                opacity: 1;
+            }
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: #ffffff;
+            font-size: 48px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 10000;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            background: rgba(211,47,47,0.8);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        
+        .lightbox-close:hover,
+        .lightbox-close:focus {
+            background: rgba(211,47,47,1);
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 4px 16px rgba(211,47,47,0.5);
+        }
+        
+        .lightbox-caption {
+            margin: auto;
+            display: block;
+            max-width: 80%;
+            text-align: center;
+            color: #fff;
+            padding: 15px 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .lightbox-content {
+                max-width: 95%;
+                max-height: 70vh;
+            }
+            .lightbox-close {
+                top: 10px;
+                right: 20px;
+                font-size: 35px;
+            }
+        }
+    </style>
+    
+    <script>
+        function openLightbox(imageSrc) {
+            const modal = document.getElementById('lightboxModal');
+            const modalImg = document.getElementById('lightboxImg');
+            const caption = document.getElementById('lightboxCaption');
+            
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+            caption.innerHTML = 'Gallery Image';
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeLightbox() {
+            const modal = document.getElementById('lightboxModal');
+            modal.style.display = 'none';
+            
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close lightbox on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+        
+        // Prevent closing when clicking on image
+        document.getElementById('lightboxImg')?.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    </script>
 </body>
 </html>
 <?php include 'footer.php'; ?>

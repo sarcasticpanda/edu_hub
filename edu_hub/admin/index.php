@@ -9,8 +9,9 @@ try {
     $stats['gallery_images'] = $pdo->query("SELECT COUNT(*) FROM gallery_images WHERE is_active = 1")->fetchColumn();
     $stats['leadership'] = $pdo->query("SELECT COUNT(*) FROM leadership WHERE is_active = 1")->fetchColumn();
     $stats['achievements'] = $pdo->query("SELECT COUNT(*) FROM achievements")->fetchColumn();
+    $stats['total_applications'] = $pdo->query("SELECT COUNT(*) FROM student_applications")->fetchColumn();
 } catch (Exception $e) {
-    $stats = ['notices' => 0, 'gallery_images' => 0, 'leadership' => 0, 'achievements' => 0];
+    $stats = ['notices' => 0, 'gallery_images' => 0, 'leadership' => 0, 'achievements' => 0, 'total_applications' => 0];
 }
 
 $school_name = getSchoolConfig('school_name', 'School CMS');
@@ -130,6 +131,17 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                     </div>
                 </div>
                 <div class="col-md-3">
+                    <div class="stats-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                        <i class="fas fa-user-graduate"></i>
+                        <h3><?= $stats['total_applications'] ?></h3>
+                        <p>Student Applications</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
                     <div class="stats-card">
                         <i class="fas fa-trophy"></i>
                         <h3><?= $stats['achievements'] ?></h3>
@@ -218,6 +230,15 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
                             <i class="fas fa-envelope text-danger"></i>
                             <h5>Contact Manager</h5>
                             <p class="text-muted">Update contact page information</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="student_applications.php" class="nav-card">
+                        <div class="text-center">
+                            <i class="fas fa-user-graduate text-primary"></i>
+                            <h5>Student Application Manager</h5>
+                            <p class="text-muted">Manage student applications, profiles, and communication</p>
                         </div>
                     </a>
                 </div>
