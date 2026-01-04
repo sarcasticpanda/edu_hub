@@ -66,16 +66,16 @@ git push
 ### Before Pushing, Verify No Secrets:
 ```bash
 # Search for your email in tracked files
-git grep "clumsypanda6o9@gmail.com"
+git grep "your_email@gmail.com"
 
 # Search for your app password
-git grep "ncdc uiqb"
+git grep "your_app_password"
 
 # Search for Google Client ID
-git grep "689927052954"
+git grep "your_client_id"
 
 # Search for Google Client Secret
-git grep "GOCSPX"
+git grep "your_client_secret"
 ```
 
 **If any of these return results, STOP! Those files need to be fixed.**
