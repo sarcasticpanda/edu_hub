@@ -95,6 +95,7 @@ Users can access school-related information and submit data.
   - Holidays
   - Circulars
   - Events
+  - Registrations
 
 ---
 
