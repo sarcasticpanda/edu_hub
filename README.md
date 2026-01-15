@@ -112,5 +112,5 @@ Users can access school-related information and submit data.
 
 ---
 
-## 📁 Project Structure
+## 📁 Project str
 
