@@ -254,6 +254,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+<<<<<<< HEAD
 ## 📧 Contact
 
 For questions or support, please open an issue on GitHub.
@@ -261,4 +262,31 @@ For questions or support, please open an issue on GitHub.
 ---
 
 **Made with ❤️ for Government Schools in Telangana**
+=======
+### 📢 Announcements & Notices
+- Admin-managed announcement board
+- Used for:
+  - Exams
+  - Holidays
+  - Circulars
+  - Events
+  - Registrations
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer       | Technology |
+|------------|------------|
+| Backend     | PHP |
+| Database    | MySQL |
+| Frontend    | HTML, CSS, JavaScript |
+| Auth        | PHP Sessions |
+| Email       | PHP Mail / SMTP |
+| Hosting     | Shared Hosting / Local Server |
+
+---
+
+## 📁 Project str
+>>>>>>> 74a6283b4cdf580f19cb032b4eb5d494138b6a4c
 
