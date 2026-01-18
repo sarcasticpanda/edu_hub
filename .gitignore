@@ -1,4 +1,3 @@
-# Environment Configuration Files
 config.php
 .env
 .env.local
@@ -15,6 +14,61 @@ composer.phar
 # Uploaded files (contains user data)
 uploads/
 **/uploads/
+
+# Storage directories (user data)
+storage/
+**/storage/
+
+# Google API and auth files (adjust if needed)
+vendor/google/
+public/student_google_*.php
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+###########################################
+# SENSITIVE FILES & FOLDERS (DO NOT COMMIT)
+###########################################
+# Main config files (contains secrets)
+config.php
+.env
+.env.*
+
+# Database credentials
+admin/includes/db.php
+**/db.php
+!**/db.example.php
+
+# Email credentials (if any)
+smtp_config.php
+
+# Google Auth & API keys
+public/student_google_*.php
+vendor/google/
+
+# Uploaded files (user data)
+uploads/
+**/uploads/
+
+# Storage directories (user data)
+storage/
+**/storage/
+
+# Vendor dependencies
+vendor/
+composer.lock
+composer.phar
 
 # IDE and Editor files
 .vscode/

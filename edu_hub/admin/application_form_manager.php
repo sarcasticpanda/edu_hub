@@ -78,19 +78,8 @@ unset($_SESSION['success_message']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application Form Manager - <?= htmlspecialchars($school_name) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <?php include 'includes/admin_styles.php'; ?>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #f5f7fa;
-        }
-        .header-section {
-            background: linear-gradient(135deg, #1E2A44 0%, #2c3e50 100%);
-            color: white;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
         .card-custom {
             background: white;
             border-radius: 10px;
@@ -99,16 +88,16 @@ unset($_SESSION['success_message']);
             margin-bottom: 2rem;
         }
         .field-item {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 1rem;
             transition: all 0.3s;
         }
         .field-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            border-color: var(--accent-blue);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
         }
         .field-item.inactive {
             opacity: 0.6;
@@ -126,23 +115,25 @@ unset($_SESSION['success_message']);
     </style>
 </head>
 <body>
-    <div class="header-section">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1><i class="fas fa-edit me-3"></i>Application Form Manager</h1>
-                    <p class="mb-0">Customize application form fields</p>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="admin-header-left">
+                <i class="fas fa-edit"></i>
+                <div class="admin-header-info">
+                    <h1>Application Form Manager</h1>
+                    <p>Customize application form fields</p>
                 </div>
-                <a href="student_applications.php" class="btn btn-light"><i class="fas fa-arrow-left me-2"></i>Back to Applications</a>
+            </div>
+            <div class="admin-header-right">
+                <a href="student_applications.php" class="btn-back"><i class="fas fa-arrow-left"></i> Applications</a>
+                <a href="index.php" class="btn-view-site"><i class="fas fa-home"></i> Dashboard</a>
             </div>
         </div>
-    </div>
 
-    <div class="container">
+    <div class="container-fluid p-4">
         <?php if ($success_msg): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i><?= htmlspecialchars($success_msg) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i><?= htmlspecialchars($success_msg) ?>
             </div>
         <?php endif; ?>
 
@@ -287,6 +278,7 @@ unset($_SESSION['success_message']);
                 </form>
             </div>
         </div>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

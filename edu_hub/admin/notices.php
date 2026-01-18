@@ -6,7 +6,7 @@ require_once 'includes/db.php';
 $message = '';
 $error = '';
 
-$upload_dir_relative = '../check/notice_attachments/';
+$upload_dir_relative = '../storage/notice_attachments/';
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if (in_array($ext, $allowed)) {
                     $filename = 'notice_' . time() . '_' . uniqid() . '.' . $ext;
-                    $upload_dir_absolute = $_SERVER['DOCUMENT_ROOT'] . '/seqto_edu_share/edu_hub/edu_hub/check/notice_attachments/';
+                    $upload_dir_absolute = $_SERVER['DOCUMENT_ROOT'] . '/2026/edu_hub/edu_hub/storage/notice_attachments/';
                     
                     // Create directory if it doesn't exist
                     if (!is_dir($upload_dir_absolute)) {
@@ -78,22 +78,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if (empty($error)) {
-                $is_active = isset($_POST['is_active']) ? 1 : 0;
+                $is_active = isset($_POST['is_active']) ? 1 : 1; // Default to active
                 echo "Attempting to insert into database...<br>";
-                $stmt = $pdo->prepare("INSERT INTO notices_new (title, subheading, content, posted_by, created_at, attachment_path, attachment_type, is_active) VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)");
+                $stmt = $pdo->prepare("INSERT INTO notices (title, subheading, content, notice_type, posted_by, attachment_path, attachment_type, is_active, is_pinned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 if ($stmt->execute([
                     $_POST['title'],
                     $_POST['subheading'],
                     $_POST['content'],
+                    $_POST['notice_type'] ?? 'general',
                     $_POST['posted_by'],
                     $attachment_path,
                     $attachment_type,
-                    $is_active
+                    $is_active,
+                    isset($_POST['is_pinned']) ? 1 : 0
                 ])) {
                     echo "Database insert successful!<br>";
                     if (empty($message)) {
                         $message = 'Notice added successfully!';
                     }
+                    header('Location: notices.php?success=added');
+                    exit;
                 } else {
                     $error_info = $stmt->errorInfo();
                     echo "Database insert failed! Error: " . $error_info[2] . "<br>";
@@ -114,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (in_array($ext, $allowed)) {
                     $filename = 'notice_' . time() . '_' . uniqid() . '.' . $ext;
-                    $upload_dir_absolute = $_SERVER['DOCUMENT_ROOT'] . '/seqto_edu_share/edu_hub/edu_hub/check/notice_attachments/';
+                    $upload_dir_absolute = $_SERVER['DOCUMENT_ROOT'] . '/2026/edu_hub/edu_hub/storage/notice_attachments/';
 
                     if (!is_dir($upload_dir_absolute)) {
                         if (!mkdir($upload_dir_absolute, 0777, true)) {
@@ -156,14 +160,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if (empty($error)) {
-                $is_active = isset($_POST['is_active']) ? 1 : 0;
+                $is_active = isset($_POST['is_active']) ? 1 : 1; // Default to active
+                $is_pinned = isset($_POST['is_pinned']) ? 1 : 0;
                 echo "Attempting to update database (Update)...<br>";
-                $stmt = $pdo->prepare("UPDATE notices_new SET title = ?, subheading = ?, content = ?, posted_by = ?, updated_at = NOW(), attachment_path = ?, attachment_type = ?, is_active = ? WHERE id = ?");
+                $stmt = $pdo->prepare("UPDATE notices SET title = ?, subheading = ?, content = ?, posted_by = ?, notice_type = ?, is_pinned = ?, attachment_path = ?, attachment_type = ?, is_active = ? WHERE id = ?");
                 if ($stmt->execute([
                     $_POST['title'],
                     $_POST['subheading'],
                     $_POST['content'],
                     $_POST['posted_by'],
+                    $_POST['notice_type'],
+                    $is_pinned,
                     $attachment_path,
                     $attachment_type,
                     $is_active,
@@ -171,6 +178,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ])) {
                     echo "Database update successful! (Update)<br>";
                     $message = 'Notice updated successfully!';
+                    header('Location: notices.php?success=updated');
+                    exit;
                 } else {
                     $error_info = $stmt->errorInfo();
                     echo "Database update failed! Error: " . $error_info[2] . "<br>";
@@ -181,21 +190,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (isset($_POST['delete_notice'])) {
             // Get attachment path before deleting
-            $stmt = $pdo->prepare("SELECT attachment_path FROM notices_new WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT attachment_path FROM notices WHERE id = ?");
             $stmt->execute([$_POST['notice_id']]);
             $attachment = $stmt->fetchColumn();
             
             // Delete attachment file if exists
-            $absolute_attachment_path = $_SERVER['DOCUMENT_ROOT'] . '/seqto_edu_share/edu_hub/edu_hub/check/notice_attachments/' . $attachment;
+            $absolute_attachment_path = $_SERVER['DOCUMENT_ROOT'] . '/2026/edu_hub/edu_hub/storage/notice_attachments/' . $attachment;
             if ($attachment && file_exists($absolute_attachment_path)) {
-                if (unlink($absolute_attachment_path)) {
-                } else {
-                }
+                unlink($absolute_attachment_path);
             }
             
-            $stmt = $pdo->prepare("DELETE FROM notices_new WHERE id = ?");
+            $stmt = $pdo->prepare("DELETE FROM notices WHERE id = ?");
             if ($stmt->execute([$_POST['notice_id']])) {
                 $message = 'Notice deleted successfully!';
+                header('Location: notices.php?success=deleted');
+                exit;
             } else {
                 $error_info = $stmt->errorInfo();
                 $error = 'Failed to delete notice from database.';
@@ -208,12 +217,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Get all notices
-$notices = $pdo->query("SELECT * FROM notices_new ORDER BY created_at DESC")->fetchAll();
+$notices = $pdo->query("SELECT * FROM notices ORDER BY is_pinned DESC, created_at DESC")->fetchAll();
+
+// Handle success messages from redirects
+if (isset($_GET['success'])) {
+    switch($_GET['success']) {
+        case 'added':
+            $message = 'Notice added successfully!';
+            break;
+        case 'updated':
+            $message = 'Notice updated successfully!';
+            break;
+        case 'deleted':
+            $message = 'Notice deleted successfully!';
+            break;
+    }
+}
 
 // Get notice for editing
 $edit_notice = null;
 if (isset($_GET['edit'])) {
-    $stmt = $pdo->prepare("SELECT * FROM notices_new WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT * FROM notices WHERE id = ?");
     $stmt->execute([$_GET['edit']]);
     $edit_notice = $stmt->fetch();
 }
@@ -225,248 +249,159 @@ if (isset($_GET['edit'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notice Board Management - Admin Portal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <?php include 'includes/admin_styles.php'; ?>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e0f2f7 0%, #c1e4ee 100%); /* Lighter, more modern blue gradient */
-            min-height: 100vh;
-            color: #333;
-        }
-        .admin-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-            overflow: hidden;
-            border: 1px solid #e0e0e0;
-        }
-        .admin-header {
-            background: linear-gradient(135deg, #0062cc 0%, #003f8e 100%); /* Deeper blue for header */
-            color: white;
-            padding: 2.5rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .admin-header h1 {
-            font-size: 2.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        .admin-header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
         .notice-card {
             background: #ffffff;
-            border-left: 6px solid #28a745; /* Vibrant green for active notices */
-            margin-bottom: 1.8rem;
+            border-left: 6px solid var(--accent-green);
+            margin-bottom: 1.5rem;
             padding: 0;
-            border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .notice-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-            border-color: #007bff; /* Blue on hover */
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
         .notice-header {
-            background: #f0f8ff; /* Light background for header */
-            padding: 1.8rem;
-            border-bottom: 1px solid #e9ecef;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
         }
         .notice-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #343a40;
-            margin-bottom: 0.6rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
         }
         .notice-subheading {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: #007bff;
-            margin-bottom: 0.6rem;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
         }
         .notice-meta {
-            font-size: 0.95rem;
-            color: #6c757d;
+            font-size: 0.85rem;
+            color: var(--text-muted);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 0.8rem;
+            margin-top: 0.5rem;
         }
         .notice-body {
-            padding: 1.8rem;
+            padding: 1.5rem;
         }
         .notice-content {
-            font-size: 1.05rem;
-            color: #495057;
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1rem;
         }
         .notice-attachment {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 10px;
-            padding: 1.2rem;
-            margin-top: 1.5rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
         .attachment-icon {
-            font-size: 2.2rem;
-            margin-right: 0.8rem;
+            font-size: 1.75rem;
         }
-        .pdf-icon { color: #dc3545; }
-        .image-icon { color: #28a745; }
-        .document-icon { color: #007bff; }
+        .pdf-icon { color: var(--accent-red); }
+        .image-icon { color: var(--accent-green); }
+        .document-icon { color: var(--accent-blue); }
         .notice-actions {
-            padding: 1.2rem 1.8rem;
-            background: #f0f8ff;
-            border-top: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
             display: flex;
             justify-content: flex-end;
-            gap: 0.7rem;
+            gap: 0.5rem;
         }
         .notice-form {
             background: #ffffff;
-            padding: 2.5rem;
-            border-radius: 18px;
-            margin-bottom: 2.5rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            border: 1px solid #e0e0e0;
-        }
-        .form-section {
-            background: #f8f9fa;
             padding: 2rem;
             border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .form-section {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
             margin-bottom: 1.5rem;
-            border-left: 5px solid #17a2b8; /* Info blue for form sections */
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--accent-teal);
         }
         .form-section h6 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #343a40;
-            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
         }
         .attachment-preview {
-            max-width: 180px;
-            max-height: 120px;
-            border-radius: 8px;
+            max-width: 150px;
+            max-height: 100px;
+            border-radius: 6px;
             object-fit: cover;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
         .file-upload-area {
-            border: 3px dashed #cce5ff; /* Lighter blue dashed border */
-            border-radius: 12px;
-            padding: 2.5rem;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 2rem;
             text-align: center;
-            background: #f0f8ff;
-            transition: border-color 0.3s ease, background 0.3s ease;
-            color: #666;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
         }
         .file-upload-area:hover {
-            border-color: #007bff;
-            background: #e6f7ff;
-        }
-        .file-upload-area.dragover {
-            border-color: #28a745;
-            background: #e6ffe6;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-            transform: translateY(-1px);
-        }
-        .btn-warning {
-            background-color: #ffc107;
-            border-color: #ffc107;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        .btn-warning:hover {
-            background-color: #e0a800;
-            border-color: #e0a800;
-            transform: translateY(-1px);
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-            transform: translateY(-1px);
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-            border-color: #5a6268;
-            transform: translateY(-1px);
-        }
-        .alert {
-            border-radius: 10px;
-            font-size: 1rem;
-            padding: 1.2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .form-control {
-            border-radius: 8px;
-            padding: 0.8rem 1rem;
-            border: 1px solid #ced4da;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .form-control:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.25rem rgba(0,123,255,.25);
-        }
-        label.form-label {
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 0.5rem;
-        }
-        .form-check-input:checked {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .form-switch .form-check-input {
-            height: 1.4em;
-            width: 2.5em;
-            cursor: pointer;
+            border-color: var(--accent-blue);
+            background: #eff6ff;
         }
     </style>
 </head>
 <body>
     <div class="admin-container">
         <div class="admin-header">
-            <h1><i class="fas fa-bell me-3"></i>Notice Board Management</h1>
-            <p class="mb-0">Add, edit, and manage website notices with attachments</p>
+            <div class="admin-header-left">
+                <i class="fas fa-bell"></i>
+                <div class="admin-header-info">
+                    <h1>Notice Board Management</h1>
+                    <p>Add, edit, and manage website notices with attachments</p>
+                </div>
+            </div>
+            <div class="admin-header-right">
+                <a href="index.php" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                <a href="../public/notices.php" class="btn-view-site"><i class="fas fa-external-link-alt"></i> View Notices</a>
+            </div>
         </div>
 
         <div class="container-fluid p-4">
-            <div class="d-flex justify-content-between align-items-center mb-5">
-                <h5 class="text-primary fw-bold">Manage Notices</h5>
-                <a href="index.php" class="btn btn-secondary rounded-pill px-4 py-2">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                </a>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="badge bg-primary">
+                        <i class="fas fa-list me-1"></i><span id="noticeCount"><?= count($notices) ?></span> Total
+                    </span>
+                    <span class="badge bg-success">
+                        <i class="fas fa-thumbtack me-1"></i><span id="pinnedCount"><?= count(array_filter($notices, fn($n) => $n['is_pinned'])) ?></span> Pinned
+                    </span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <label class="me-2 text-muted small">Filter:</label>
+                    <select id="categoryFilter" class="form-select form-select-sm" style="width: auto;" onchange="filterNotices()">
+                        <option value="all">All Categories</option>
+                        <option value="general">General</option>
+                        <option value="circular">Circular</option>
+                        <option value="announcement">Announcement</option>
+                        <option value="event">Event</option>
+                    </select>
+                </div>
             </div>
 
             <?php if ($message): ?>
@@ -523,6 +458,31 @@ if (isset($_GET['edit'])) {
                             <label class="form-label fw-bold">Notice Content *</label>
                             <textarea name="content" class="form-control" rows="6" 
                                       placeholder="Enter the full notice content..." required><?= htmlspecialchars($edit_notice['content'] ?? '') ?></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Notice Category *</label>
+                                    <select name="notice_type" class="form-select" required>
+                                        <option value="general" <?= ($edit_notice['notice_type'] ?? 'general') == 'general' ? 'selected' : '' ?>>General</option>
+                                        <option value="circular" <?= ($edit_notice['notice_type'] ?? '') == 'circular' ? 'selected' : '' ?>>Circular</option>
+                                        <option value="announcement" <?= ($edit_notice['notice_type'] ?? '') == 'announcement' ? 'selected' : '' ?>>Announcement</option>
+                                        <option value="event" <?= ($edit_notice['notice_type'] ?? '') == 'event' ? 'selected' : '' ?>>Event</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Pin Notice</label>
+                                    <div class="form-check form-switch fs-5 mt-2">
+                                        <input class="form-check-input" type="checkbox" id="isPinnedSwitch" name="is_pinned" value="1" <?= ($edit_notice['is_pinned'] ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="isPinnedSwitch">
+                                            <i class="fas fa-thumbtack me-2"></i>Pin this notice to top & show on homepage
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -593,9 +553,21 @@ if (isset($_GET['edit'])) {
             <?php else: ?>
                 <div class="row g-4">
                 <?php foreach ($notices as $notice): ?>
-                    <div class="col-md-6">
+                    <div class="col-md-6 notice-item" data-category="<?= htmlspecialchars($notice['notice_type'] ?? 'general') ?>" data-pinned="<?= $notice['is_pinned'] ? '1' : '0' ?>">
                     <div class="notice-card">
                         <div class="notice-header">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <?php if ($notice['is_pinned']): ?>
+                                        <span class="badge bg-success me-2">
+                                            <i class="fas fa-thumbtack me-1"></i>Pinned
+                                        </span>
+                                    <?php endif; ?>
+                                    <span class="badge bg-secondary">
+                                        <?= ucfirst($notice['notice_type'] ?? 'general') ?>
+                                    </span>
+                                </div>
+                            </div>
                             <div class="notice-title"><?= htmlspecialchars($notice['title']) ?></div>
                             <?php if (!empty($notice['subheading'])): ?>
                                 <div class="notice-subheading"><?= htmlspecialchars($notice['subheading']) ?></div>
@@ -665,5 +637,30 @@ if (isset($_GET['edit'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterNotices() {
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            const noticeItems = document.querySelectorAll('.notice-item');
+            let visibleCount = 0;
+            let pinnedCount = 0;
+            
+            noticeItems.forEach(item => {
+                const category = item.getAttribute('data-category');
+                const isPinned = item.getAttribute('data-pinned') === '1';
+                
+                if (selectedCategory === 'all' || category === selectedCategory) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                    if (isPinned) pinnedCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Update counts
+            document.getElementById('noticeCount').textContent = visibleCount;
+            document.getElementById('pinnedCount').textContent = pinnedCount;
+        }
+    </script>
 </body>
 </html> 

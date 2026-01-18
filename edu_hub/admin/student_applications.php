@@ -79,19 +79,8 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Applications - <?= htmlspecialchars($school_name) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <?php include 'includes/admin_styles.php'; ?>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #f5f7fa;
-        }
-        .header-section {
-            background: linear-gradient(135deg, #1E2A44 0%, #2c3e50 100%);
-            color: white;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
         .stats-row {
             margin-bottom: 2rem;
         }
@@ -110,18 +99,18 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         .stat-card.active {
-            border-color: #667eea;
+            border-color: var(--accent-blue);
         }
         .stat-card h3 {
             font-size: 2.5rem;
             margin: 0.5rem 0;
             font-weight: bold;
         }
-        .stat-card.total { color: #667eea; }
-        .stat-card.pending { color: #ffc107; }
-        .stat-card.under-review { color: #17a2b8; }
-        .stat-card.approved { color: #28a745; }
-        .stat-card.rejected { color: #dc3545; }
+        .stat-card.total { color: var(--accent-blue); }
+        .stat-card.pending { color: var(--accent-orange); }
+        .stat-card.under-review { color: var(--accent-teal); }
+        .stat-card.approved { color: var(--accent-green); }
+        .stat-card.rejected { color: var(--accent-red); }
         
         .filter-section {
             background: white;
@@ -159,23 +148,22 @@ $school_name = getSchoolConfig('school_name', 'School CMS');
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="header-section">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="admin-header-left">
+                <i class="fas fa-file-alt"></i>
+                <div class="admin-header-info">
                     <h1>Student Application Manager</h1>
-                    <p class="mb-0">Manage and review all student applications</p>
+                    <p>Manage and review all student applications</p>
                 </div>
-                <div>
-                    <a href="application_form_manager.php" class="btn btn-secondary me-2">
-                        Manage Form Fields
-                    </a>
-                    <a href="index.php" class="btn btn-outline-light">Back to Dashboard</a>
-                </div>
+            </div>
+            <div class="admin-header-right">
+                <a href="application_form_manager.php" class="btn-view-site"><i class="fas fa-cog"></i> Form Fields</a>
+                <a href="index.php" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
             </div>
         </div>
 
-        <div class="container">
+        <div class="container-fluid p-4">
             <!-- Statistics -->
             <div class="row stats-row">
                 <div class="col-md">

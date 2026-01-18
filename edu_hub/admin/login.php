@@ -134,7 +134,7 @@ if (isset($_SESSION['admin_id'])) {
                     Default: admin@school.edu / admin123
                 </small>
                 <br>
-                <a href="../check/user/index.php" class="back-link">
+                <a href="../public/index.php" class="back-link">
                     <i class="fas fa-arrow-left me-1"></i>Back to Website
                 </a>
             </div>

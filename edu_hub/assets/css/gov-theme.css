@@ -1,0 +1,49 @@
+/* Govt Theme - Global Overrides (Phase 1) */
+:root {
+  --gov-green: #0b5e3c;
+  --gov-green-2: #146b3a;
+  --gov-orange: #ff9933;
+  --gov-text: #1a1a1a;
+  --gov-border: #dcdcdc;
+  --gov-bg: #ffffff;
+}
+
+/* Base Typography */
+html, body {
+  font-family: Roboto, "Noto Sans", Arial, sans-serif;
+  color: var(--gov-text);
+  background: var(--gov-bg);
+}
+
+/* Reset heavy styles */
+* { box-sizing: border-box; }
+img { max-width: 100%; height: auto; }
+
+/* Top Utility Bar */
+.gov-top-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--gov-border);
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+.gov-top-bar .social-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--gov-green); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+.gov-top-bar .login-btn-top { background: var(--gov-orange); color: #fff; border-radius: 4px; padding: 4px 12px; font-weight: 600; }
+
+/* Main Identity Block */
+.school-header { background: #fff; border-bottom: 2px solid var(--gov-orange); }
+.school-name-english { color: var(--gov-green); }
+
+/* Green Navbar - Backbone */
+.gov-navbar { background: var(--gov-green); border-bottom: 1px solid rgba(0,0,0,0.08); }
+.gov-navbar .gov-navbar-link { color: #fff; text-transform: uppercase; font-weight: 600; padding: 14px 22px; border-bottom: 0; }
+.gov-navbar .gov-navbar-link:hover, .gov-navbar .gov-navbar-link:focus { text-decoration: underline; color: #fff; }
+.gov-navbar .dropdown-menu { background: var(--gov-green); border: 0; }
+
+/* Section Titles - minimal */
+.section-title { font-size: 28px; font-weight: 700; color: var(--gov-text); text-align: center; margin: 24px 0; padding-bottom: 0; }
+.section-title::after { display: none; }
+
+/* Cards - no fancy borders */
+.notice-card, .official-card { border: 0; box-shadow: none; }
+.official-image { border: 0; }

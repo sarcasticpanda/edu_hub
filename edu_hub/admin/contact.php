@@ -49,147 +49,144 @@ $resolved_messages = $pdo->query("SELECT * FROM contact_messages WHERE is_replie
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Management | Telangana School/College</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Open+Sans:wght@400;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Contact Management - Admin Portal</title>
+    <?php include 'includes/admin_styles.php'; ?>
     <style>
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f7f7fa 0%, #ffffff 100%);
-            font-family: 'Open Sans', sans-serif;
-        }
-        .admin-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 10px 30px rgba(30,42,68,0.10);
-            padding: 32px 24px 32px 24px;
-        }
-        .admin-header {
-            background: linear-gradient(135deg, #1E2A44 0%, #2c3e50 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-            border-radius: 15px 15px 0 0;
-            margin-bottom: 32px;
-        }
-        .back-btn {
-            margin: 24px 0 0 24px;
-        }
-        .section-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #1E2A44;
-            margin-bottom: 1.5rem;
-            letter-spacing: 1px;
-        }
         .contact-card, .contact-form-card {
             border-radius: 14px;
             box-shadow: 0 4px 24px rgba(30,42,68,0.08);
             background: #fff;
             padding: 2rem 1.5rem;
             margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
         }
-        .form-label, .contact-label {
+        .contact-label {
             font-weight: 600;
-            color: #1E2A44;
+            color: var(--text-dark);
         }
-        .btn-primary { background: #1E2A44; border: none; }
-        .btn-primary:hover { background: #16305a; }
-        .alert { border-radius: 8px; }
-        .max-h-300 { max-height: 300px; overflow-y: auto; }
+        .section-subtitle {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .max-h-300 { max-height: 400px; overflow-y: auto; }
+        .message-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
-    <a href="index.php" class="btn btn-secondary back-btn">
-        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-    </a>
     <div class="admin-container">
         <div class="admin-header">
-            <h1 class="mb-0">Contact Management</h1>
-            <p class="mb-0">Manage contact page information and user queries</p>
+            <div class="admin-header-left">
+                <i class="fas fa-envelope"></i>
+                <div class="admin-header-info">
+                    <h1>Contact Management</h1>
+                    <p>Manage contact page information and user queries</p>
+                </div>
+            </div>
+            <div class="admin-header-right">
+                <a href="index.php" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                <a href="../public/contact.php" class="btn-view-site"><i class="fas fa-external-link-alt"></i> View Site</a>
+            </div>
         </div>
-        <div class="row g-5 align-items-stretch">
-            <div class="col-md-6">
-                <div class="contact-card">
-                    <h2 class="section-title">Edit Contact Details</h2>
-                    <?php if ($message): ?>
-                        <div class="alert alert-success mb-3"> <?= htmlspecialchars($message) ?> </div>
-                    <?php endif; ?>
-                    <?php if ($error): ?>
-                        <div class="alert alert-danger mb-3"> <?= htmlspecialchars($error) ?> </div>
-                    <?php endif; ?>
+
+        <?php if ($message): ?>
+            <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?= htmlspecialchars($message) ?></div>
+        <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="content-section">
+                    <h3><i class="fas fa-edit"></i> Edit Contact Details</h3>
                     <form method="post">
-                        <div class="mb-3">
-                            <label class="form-label">Address</label>
+                        <div class="form-group">
+                            <label class="form-label">Address <span class="text-danger">*</span></label>
                             <textarea name="address" class="form-control" rows="3" required><?= htmlspecialchars($contact_data['address'] ?? '') ?></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone</label>
+                        <div class="form-group">
+                            <label class="form-label">Phone <span class="text-danger">*</span></label>
                             <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($contact_data['phone'] ?? '') ?>" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($contact_data['email'] ?? '') ?>" required>
                         </div>
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label class="form-label">Office Hours</label>
-                            <textarea name="office_hours" class="form-control" rows="3"><?= htmlspecialchars($contact_data['office_hours'] ?? '') ?></textarea>
+                            <textarea name="office_hours" class="form-control" rows="2"><?= htmlspecialchars($contact_data['office_hours'] ?? '') ?></textarea>
                         </div>
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label class="form-label">Google Maps Embed Code</label>
                             <textarea name="map_embed" class="form-control" rows="3" placeholder="Paste Google Maps embed iframe code here"><?= htmlspecialchars($contact_data['map_embed'] ?? '') ?></textarea>
-                            <small class="text-muted">Paste the iframe code from Google Maps here.</small>
+                            <div class="help-text">Paste the iframe code from Google Maps here.</div>
                         </div>
-                        <button type="submit" name="update_contact" class="btn btn-primary w-100">Update Details</button>
+                        <button type="submit" name="update_contact" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Details
+                        </button>
                     </form>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="contact-form-card">
-                    <h2 class="section-title">Active Messages & Queries</h2>
+            <div class="col-lg-6">
+                <div class="content-section">
+                    <h3><i class="fas fa-inbox" style="color: var(--accent-orange);"></i> Active Messages</h3>
                     <?php if (empty($active_messages)): ?>
-                        <div class="alert alert-info">No active messages.</div>
+                        <div class="alert alert-info"><i class="fas fa-info-circle"></i> No active messages.</div>
                     <?php else: ?>
                         <div class="max-h-300">
                             <?php foreach ($active_messages as $msg): ?>
-                                <div class="p-3 mb-3 bg-light rounded shadow-sm">
-                                    <div class="mb-1"><span class="contact-label">Name:</span> <?= htmlspecialchars($msg['name']) ?></div>
-                                    <div class="mb-1"><span class="contact-label">Email:</span> <a href="mailto:<?= htmlspecialchars($msg['email']) ?>" class="text-primary text-decoration-underline"><?= htmlspecialchars($msg['email']) ?></a></div>
-                                    <div class="mb-1"><span class="contact-label">Subject:</span> <?= htmlspecialchars($msg['subject']) ?></div>
-                                    <div class="mb-1"><span class="contact-label">Message:</span> <?= nl2br(htmlspecialchars($msg['message'])) ?></div>
-                                    <div class="mb-1 text-muted small">Date: <?= htmlspecialchars($msg['created_at']) ?></div>
+                                <div class="message-card">
+                                    <div class="mb-2"><span class="contact-label">Name:</span> <?= htmlspecialchars($msg['name']) ?></div>
+                                    <div class="mb-2"><span class="contact-label">Email:</span> <a href="mailto:<?= htmlspecialchars($msg['email']) ?>"><?= htmlspecialchars($msg['email']) ?></a></div>
+                                    <div class="mb-2"><span class="contact-label">Subject:</span> <?= htmlspecialchars($msg['subject']) ?></div>
+                                    <div class="mb-2"><span class="contact-label">Message:</span> <?= nl2br(htmlspecialchars($msg['message'])) ?></div>
+                                    <div class="mb-2 text-muted small"><i class="fas fa-clock me-1"></i> <?= htmlspecialchars($msg['created_at']) ?></div>
                                     <form method="post" class="mt-2">
                                         <input type="hidden" name="message_id" value="<?= $msg['id'] ?>">
                                         <input type="hidden" name="to_email" value="<?= htmlspecialchars($msg['email']) ?>">
                                         <div class="mb-2">
-                                            <input type="text" name="reply_subject" class="form-control" placeholder="Subject" value="Re: <?= htmlspecialchars($msg['subject']) ?>">
+                                            <input type="text" name="reply_subject" class="form-control form-control-sm" placeholder="Subject" value="Re: <?= htmlspecialchars($msg['subject']) ?>">
                                         </div>
                                         <div class="mb-2">
-                                            <textarea name="reply_message" class="form-control" rows="3" placeholder="Your Reply"></textarea>
+                                            <textarea name="reply_message" class="form-control form-control-sm" rows="2" placeholder="Your Reply"></textarea>
                                         </div>
-                                        <button type="submit" class="btn btn-primary w-100">Send Reply</button>
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fas fa-reply me-1"></i>Send Reply
+                                        </button>
                                     </form>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
-                    <h2 class="section-title mt-5">Resolved Messages</h2>
+                </div>
+
+                <div class="content-section" style="border-left-color: var(--accent-green);">
+                    <h3><i class="fas fa-check-circle" style="color: var(--accent-green);"></i> Resolved Messages</h3>
                     <?php if (empty($resolved_messages)): ?>
-                        <div class="alert alert-info">No resolved messages.</div>
+                        <div class="alert alert-info"><i class="fas fa-info-circle"></i> No resolved messages.</div>
                     <?php else: ?>
                         <div class="max-h-300">
                             <?php foreach ($resolved_messages as $msg): ?>
-                                <div class="p-3 mb-3 bg-light rounded shadow-sm">
+                                <div class="message-card">
                                     <div class="mb-1"><span class="contact-label">Name:</span> <?= htmlspecialchars($msg['name']) ?></div>
-                                    <div class="mb-1"><span class="contact-label">Email:</span> <a href="mailto:<?= htmlspecialchars($msg['email']) ?>" class="text-primary text-decoration-underline"><?= htmlspecialchars($msg['email']) ?></a></div>
+                                    <div class="mb-1"><span class="contact-label">Email:</span> <?= htmlspecialchars($msg['email']) ?></div>
                                     <div class="mb-1"><span class="contact-label">Subject:</span> <?= htmlspecialchars($msg['subject']) ?></div>
                                     <div class="mb-1"><span class="contact-label">Message:</span> <?= nl2br(htmlspecialchars($msg['message'])) ?></div>
-                                    <div class="mb-1 text-muted small">Date: <?= htmlspecialchars($msg['created_at']) ?></div>
-                                    <div class="mb-1"><span class="contact-label">Reply:</span> <?= nl2br(htmlspecialchars($msg['reply_text'])) ?></div>
+                                    <div class="mb-1 text-muted small"><i class="fas fa-clock me-1"></i> <?= htmlspecialchars($msg['created_at']) ?></div>
+                                    <div class="mt-2 p-2 bg-success bg-opacity-10 rounded">
+                                        <span class="contact-label text-success"><i class="fas fa-reply me-1"></i>Reply:</span> <?= nl2br(htmlspecialchars($msg['reply_text'])) ?>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
