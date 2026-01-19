@@ -287,6 +287,4 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-## 📁 Project str
->>>>>>> 74a6283b4cdf580f19cb032b4eb5d494138b6a4c
 
