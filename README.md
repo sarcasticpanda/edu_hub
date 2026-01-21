@@ -64,7 +64,7 @@ edu_hub/
 │   ├── student_applications.php # Applications Manager
 │   ├── application_form_manager.php
 │   └── includes/
-│       ├── auth.php           # Authentication
+│       ├── auth.php           
 │       ├── db.php             # Database Connection
 │       └── admin_styles.php   # Unified Admin Styling
 │
