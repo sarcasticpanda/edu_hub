@@ -284,7 +284,7 @@ For questions or support, please open an issue on GitHub.
 | Auth        | PHP Sessions |
 | Email       | PHP Mail / SMTP |
 | Hosting     | Shared Hosting / Local Server |
-
+,
 ---
 
 
