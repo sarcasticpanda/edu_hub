@@ -261,7 +261,7 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Made with ❤️ for Government Schools in Telangana**
+**Made for Government Schools in Telangana**
 =======
 ### 📢 Announcements & Notices
 - Admin-managed announcement board
